@@ -108,9 +108,7 @@ public enum ActionType : ushort
 
 public abstract partial class Action
 {
-    [MemoryPackIgnore]
-    public abstract ActionType Type { get; }
-    public long TimestampMs { get; protected set; }
+    protected long TimestampMs { get; set; }
     /// <summary>
     /// 发送者的 UID（主机=0，客机=1,2,3...）
     /// </summary>
@@ -142,12 +140,12 @@ public abstract partial class Action
         var targetScene = GetReceivedScene();
         if (targetScene != null && MpManager.LocalScene != targetScene.Value)
         {
-            Log.Info($"{MpManager.RoleTag} Received in invalid scene: {Type}: {ToLogString()}");
+            Log.Info($"{MpManager.RoleTag} Received in invalid scene: {ActionName}: {ToLogString()}");
             return;
         }
         if (ShouldDiscardOnStory())
         {
-            Log.Info($"{MpManager.RoleTag} Discarded (in story): {Type}");
+            Log.Info($"{MpManager.RoleTag} Discarded (in story): {ActionName}");
             return;
         }
         OnReceivedDerived();
@@ -184,6 +182,8 @@ public abstract partial class Action
         return ToString();
     }
 
+    private string ActionName => GetType().Name;
+
     private static void LogAction(LogLevel logLevel, string logStr)
     {
         switch (logLevel)
@@ -211,13 +211,13 @@ public abstract partial class Action
 
     protected void LogActionReceived()
     {
-        string logStr = $"{MpManager.RoleTag} Received {Type}{(OnReceiveLogOnlyAction ? "" : $": {ToLogString()}")}";
+        string logStr = $"{MpManager.RoleTag} Received {ActionName}{(OnReceiveLogOnlyAction ? "" : $": {ToLogString()}")}";
         LogAction(OnReceiveLogLevel, logStr);
     }
 
     protected void LogActionSend()
     {
-        string logStr = $"{MpManager.RoleTag} Send {Type}{(OnSendLogOnlyAction ? "" : $": {ToLogString()}")}";
+        string logStr = $"{MpManager.RoleTag} Send {ActionName}{(OnSendLogOnlyAction ? "" : $": {ToLogString()}")}";
         LogAction(OnSendLogLevel, logStr);
     }
 
@@ -226,7 +226,7 @@ public abstract partial class Action
         if (!MpManager.IsConnected) return;
         if (ShouldDiscardOnStory())
         {
-            Log.Info($"{MpManager.RoleTag} Will not send (in story): {Type}");
+            Log.Info($"{MpManager.RoleTag} Will not send (in story): {ActionName}");
             return;
         }
 
@@ -255,7 +255,7 @@ public abstract partial class Action
         if (!MpManager.IsConnected) return;
         if (ShouldDiscardOnStory())
         {
-            Log.Info($"{MpManager.RoleTag} Will not send (in story): {Type}");
+            Log.Info($"{MpManager.RoleTag} Will not send (in story): {ActionName}");
             return;
         }
 

@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ConfirmIzakayaAction : Action
 {
-    public override ActionType Type => ActionType.ConfirmIzakaya;
     public string MapLabel { get; set; } = "";
     public int MapLevel { get; set; } = 0;
 

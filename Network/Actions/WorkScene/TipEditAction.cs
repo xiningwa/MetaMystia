@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 
 public partial class TipEditAction : Action
 {
-    public override ActionType Type => ActionType.TipEdit;
 
     public int IntValue { get; set; }
     public EventManager.ServeType ServeType { get; set; }

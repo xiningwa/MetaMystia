@@ -21,7 +21,6 @@ public enum ReadyType
 [ServerRelay]
 public partial class PhaseReadyAction : Action
 {
-    public override ActionType Type => ActionType.PhaseReady;
     public ReadyType ReadyType;
     public bool AllReady = false;
     public override void OnReceivedDerived()

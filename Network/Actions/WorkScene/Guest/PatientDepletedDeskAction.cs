@@ -20,7 +20,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PatientDepletedDeskAction : Action
 {
-    public override ActionType Type => ActionType.PatientDepletedDesk;
 
     public int RuntimeId { get; set; }
 

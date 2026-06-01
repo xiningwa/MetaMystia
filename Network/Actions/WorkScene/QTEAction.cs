@@ -13,7 +13,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class QTEAction : Action
 {
-    public override ActionType Type => ActionType.QTE;
     public int GridIndex { get; set; }
     public float QTEScore { get; set; }
 

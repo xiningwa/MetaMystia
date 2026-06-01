@@ -13,7 +13,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PlayerChangeIdAction : Action
 {
-    public override ActionType Type => ActionType.PlayerChangeId;
 
     public string NewPlayerId { get; private set; }
 

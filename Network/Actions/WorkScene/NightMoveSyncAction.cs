@@ -10,7 +10,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class NightMoveSyncAction : Action
 {
-    public override ActionType Type => ActionType.NightMoveSync;
     public float Vx { get; set; }
     public float Vy { get; set; }
     public float Px { get; set; }

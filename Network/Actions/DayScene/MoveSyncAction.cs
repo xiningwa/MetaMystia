@@ -12,7 +12,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class MoveSyncAction : Action
 {
-    public override ActionType Type => ActionType.MoveSync;
     public float Vx { get; set; }
     public float Vy { get; set; }
     public float Px { get; set; }

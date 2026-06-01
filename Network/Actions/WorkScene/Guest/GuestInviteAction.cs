@@ -15,7 +15,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestInviteAction : Action
 {
-    public override ActionType Type => ActionType.GuestInvite;
 
     public List<int> InvitedGuestIds { get; set; } = [];
 

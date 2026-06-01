@@ -12,7 +12,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class SelectIzakayaAction : Action
 {
-    public override ActionType Type => ActionType.SelectIzakaya;
     public string MapLabel { get; set; } = "";
     public int MapLevel { get; set; } = 0;
     public override void OnReceivedDerived()

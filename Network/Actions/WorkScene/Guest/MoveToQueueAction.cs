@@ -6,7 +6,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class MoveToQueueAction : Action
 {
-    public override ActionType Type => ActionType.MoveToQueue;
 
     public int RuntimeId { get; set; }
 

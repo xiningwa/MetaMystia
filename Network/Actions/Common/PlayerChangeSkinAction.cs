@@ -15,7 +15,6 @@ namespace MetaMystia.Network;
 [Action.ServerRelay]
 public partial class PlayerChangeSkinAction : Action
 {
-    public override ActionType Type => ActionType.PlayerChangeSkin;
     public PlayerSkin Skin { get; set; }
 
     public override void OnReceivedDerived()

@@ -11,7 +11,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class UpdatePrepAction : Action
 {
-    public override ActionType Type => ActionType.UpdatePrep;
 
     [MemoryPackable]
     public partial class Table

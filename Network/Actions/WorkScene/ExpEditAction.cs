@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 
 public partial class ExpEditAction : Action
 {
-    public override ActionType Type => ActionType.ExpEdit;
 
     public float Value { get; set; }
     public EventManager.MathOperation MathOp { get; set; }

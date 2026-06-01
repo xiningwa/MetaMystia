@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class StoreSellableAction : Action
 {
-    public override ActionType Type => ActionType.StoreSellable;
 
     public enum StoreType
     {

@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class NightCookAction : Action
 {
-    public override ActionType Type => ActionType.NightCook;
     public int GridIndex { get; set; }
     public int RecipeId { get; set; }
     public SellableFood Food { get; set; }

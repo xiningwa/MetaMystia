@@ -12,7 +12,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class ExtractFromCookerAction : Action
 {
-    public override ActionType Type => ActionType.ExtractFromCooker;
     public int GridIndex { get; set; }
 
     [DiscardOnStory]

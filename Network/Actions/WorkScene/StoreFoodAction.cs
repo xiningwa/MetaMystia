@@ -12,7 +12,6 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class StoreFoodAction : Action
 {
-    public override ActionType Type => ActionType.StoreFood;
     public SellableFood Food { get; set; }
 
     protected override bool OnSendLogOnlyAction => true;

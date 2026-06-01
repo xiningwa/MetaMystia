@@ -5,7 +5,6 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 public partial class PingAction : Action
 {
-    public override ActionType Type => ActionType.Ping;
     public int Id { get; set; }
     protected override BepInEx.Logging.LogLevel OnReceiveLogLevel => BepInEx.Logging.LogLevel.Debug;
     protected override BepInEx.Logging.LogLevel OnSendLogLevel => BepInEx.Logging.LogLevel.Debug;

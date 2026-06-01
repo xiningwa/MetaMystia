@@ -15,7 +15,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PatientDepletedQueueAction : Action
 {
-    public override ActionType Type => ActionType.PatientDepletedQueue;
 
     public int RuntimeId { get; set; }
 
