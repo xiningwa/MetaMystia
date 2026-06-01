@@ -27,7 +27,7 @@ public partial class GuestLeaveAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsConnectedServer) return;
 
         var rid = RuntimeId;
         var leaveType = (GuestGroupController.LeaveType)LeaveType;

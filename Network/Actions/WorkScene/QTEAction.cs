@@ -10,7 +10,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class QTEAction : Action
 {
     public override ActionType Type => ActionType.QTE;

@@ -23,7 +23,7 @@ public partial class ExpEditAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsConnectedServer) return;
 
         PluginManager.Instance.RunOnMainThread(() =>
         {

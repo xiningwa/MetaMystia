@@ -8,7 +8,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class PrepAction : Action
 {
     public override ActionType Type => ActionType.PREP;

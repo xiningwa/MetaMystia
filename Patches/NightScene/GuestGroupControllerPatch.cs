@@ -35,7 +35,7 @@ public partial class GuestGroupControllerPatch
     public static void RefreshCurrentFundAndOrder_Prefix(GuestGroupController __instance)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnRefreshCurrentFundAndOrder(__instance);
         }
@@ -53,7 +53,7 @@ public partial class GuestGroupControllerPatch
     {
         if (GuestsManagerPatch.IsReimuProtectionGuest(__instance)) return;
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnMoveToDesk(__instance, deskCode);
         }
@@ -70,7 +70,7 @@ public partial class GuestGroupControllerPatch
         // 注：有且只有在 Spell_Orin 的负面符卡中会有 tryToJumpQueue = true
         // TODO(Spell)
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnMoveToQueue(__instance);
         }
@@ -89,7 +89,7 @@ public partial class GuestGroupControllerPatch
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
 
         var fsm = GuestsMap.GetGuestFsm(__instance);
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             var evalResult = GuestsManager.Instance.EvaluationTrans(__result);
             GuestFSM.OnEvaluateOrder(__instance, evalResult);

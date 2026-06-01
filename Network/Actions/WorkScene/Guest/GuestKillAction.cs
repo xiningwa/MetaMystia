@@ -24,7 +24,7 @@ public partial class GuestKillAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsConnectedServer) return;
 
         var rid = RuntimeId;
         var deskCode = DeskCode;

@@ -87,7 +87,7 @@ public partial class PluginManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                MpManager.Start(MpManager.ROLE.Host);
+                MpManager.Start(MpManager.ROLE.Server);
                 InGameConsole.ShowPassive("[DEBUG] Started as Host");
             }
             if (Input.GetKeyDown(KeyCode.F2))

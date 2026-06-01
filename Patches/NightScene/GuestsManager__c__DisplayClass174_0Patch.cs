@@ -27,7 +27,7 @@ public partial class GuestsManager__c__DisplayClass174_0Patch
     public static bool GenerateOrderInternal_Prefix(ref OrderGenerationResult __result, GuestGroupController toGenerate, ref GuestsManager.OrderBase orderData)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             return RunOriginal;
         }
@@ -57,7 +57,7 @@ public partial class GuestsManager__c__DisplayClass174_0Patch
     public static void GenerateOrderInternal_Postfix(GuestsManager.OrderGenerationResult __result, GuestGroupController toGenerate, ref GuestsManager.OrderBase orderData)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnGenerateOrderInternal(__result, toGenerate, orderData);
         }

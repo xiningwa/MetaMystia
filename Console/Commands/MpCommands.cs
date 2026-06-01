@@ -20,7 +20,7 @@ public static class MpCommands
         startCmd.AddArgument(startPortArg);
         startCmd.SetHandler(ctx =>
         {
-            if (MpManager.IsRunning && MpManager.IsHost)
+            if (MpManager.IsRunning && MpManager.IsServer)
             {
                 ctx.Log(TextId.MpAlreadyStarted.Get(MpManager.RoleName));
                 return;
@@ -36,7 +36,7 @@ public static class MpCommands
                 ctx.Log(ConsoleFormat.Err(TextId.MpPortRange.Get()));
                 return;
             }
-            if (MpManager.Start(MpManager.ROLE.Host, port))
+            if (MpManager.Start(MpManager.ROLE.Server, port))
             {
                 if (port != MpManager.DEFAULT_PORT)
                     ctx.Log(TextId.MpStartedOnPort.Get(port));
@@ -50,7 +50,7 @@ public static class MpCommands
         startServerCmd.SetHandler(ctx =>
         {
             ctx.Log(ConsoleFormat.Warn(TextId.MpStartDeprecated.Get()));
-            if (MpManager.IsRunning && MpManager.IsHost)
+            if (MpManager.IsRunning && MpManager.IsServer)
             {
                 ctx.Log(TextId.MpAlreadyStarted.Get(MpManager.RoleName));
                 return;
@@ -60,7 +60,7 @@ public static class MpCommands
                 ctx.Log(TextId.MpSwitchingToHost.Get());
                 MpManager.Stop();
             }
-            if (MpManager.Start(MpManager.ROLE.Host))
+            if (MpManager.Start(MpManager.ROLE.Server))
                 ctx.Log(TextId.MpStartedAsHost.Get());
         });
         startCmd.AddCommand(startServerCmd);
@@ -197,7 +197,7 @@ public static class MpCommands
         kickIdCmd.AddArgument(kickNameArg);
         kickIdCmd.SetHandler(ctx =>
         {
-            if (!MpManager.IsHost) { ctx.Log(TextId.MpKickHostOnly.Get()); return; }
+            if (!MpManager.IsServer) { ctx.Log(TextId.MpKickHostOnly.Get()); return; }
             if (PlayerManager.Peers.IsEmpty) { ctx.Log(TextId.MpKickNoTarget.Get()); return; }
             string name = ctx.ParseResult.GetValueForArgument(kickNameArg);
             foreach (var kvp in PlayerManager.Peers)
@@ -218,7 +218,7 @@ public static class MpCommands
         kickUidCmd.AddArgument(kickUidArg);
         kickUidCmd.SetHandler(ctx =>
         {
-            if (!MpManager.IsHost) { ctx.Log(TextId.MpKickHostOnly.Get()); return; }
+            if (!MpManager.IsServer) { ctx.Log(TextId.MpKickHostOnly.Get()); return; }
             if (PlayerManager.Peers.IsEmpty) { ctx.Log(TextId.MpKickNoTarget.Get()); return; }
             int uid = ctx.ParseResult.GetValueForArgument(kickUidArg);
             if (uid == MpManager.HOST_UID) { ctx.Log(TextId.MpKickSelf.Get()); return; }
@@ -239,7 +239,7 @@ public static class MpCommands
         {
             ctx.Log(ConsoleFormat.SubCmd("/mp kick id", "<name>", TextId.MpDescKickId.Get()));
             ctx.Log(ConsoleFormat.SubCmd("/mp kick uid", "<uid>", TextId.MpDescKickUid.Get()));
-            if (MpManager.IsHost && !PlayerManager.Peers.IsEmpty)
+            if (MpManager.IsServer && !PlayerManager.Peers.IsEmpty)
             {
                 ctx.Log(ConsoleFormat.Dim("Online: " + string.Join(", ",
                     PlayerManager.Peers.Select(p => $"{p.Value.Id}(uid={p.Key})"))));
@@ -259,7 +259,7 @@ public static class MpCommands
                 ctx.Log(TextId.MpMaxPlayersCurrent.Get(ConfigManager.MaxPlayers.Value));
                 return;
             }
-            if (!MpManager.IsHost && MpManager.IsConnected)
+            if (!MpManager.IsServer && MpManager.IsConnected)
             {
                 ctx.Log(ConsoleFormat.Err(TextId.MpMaxPlayersHostOnly.Get()));
                 return;
@@ -281,7 +281,7 @@ public static class MpCommands
         continueCmd.AddArgument(phaseArg);
         continueCmd.SetHandler(ctx =>
         {
-            if (!MpManager.IsHost)
+            if (!MpManager.IsServer)
             {
                 ctx.Log(TextId.MpContinueHostOnly.Get());
                 return;
@@ -303,14 +303,14 @@ public static class MpCommands
         {
             string action = ctx.ParseResult.GetValueForArgument(ipv6ActionArg);
             bool enable = action == "enable";
-            if (MpManager.IsConnectedHost)
+            if (MpManager.IsConnectedServer)
             {
                 ctx.Log(ConsoleFormat.Err(TextId.MpIpv6RejectConnected.Get()));
                 return;
             }
             ConfigManager.EnableIPv6.Value = enable;
             ctx.Log(enable ? TextId.MpIpv6Enabled.Get() : TextId.MpIpv6Disabled.Get());
-            if (MpManager.IsRunning && MpManager.IsHost)
+            if (MpManager.IsRunning && MpManager.IsServer)
             {
                 MpManager.Restart();
                 ctx.Log(TextId.MpIpv6Restarted.Get());

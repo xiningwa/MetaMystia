@@ -71,7 +71,7 @@ public partial class IzakayaConfigPannelPatch
         PlayerManager.LocalIsPrepOver = true;
         InGameConsole.ShowPassive(TextId.MystiaReadyForWork.Get());
         ReadyAction.Send(ReadyType.PrepOver);
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             MpManager.PrepOver();
         }

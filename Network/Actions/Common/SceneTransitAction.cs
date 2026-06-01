@@ -19,7 +19,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class SceneTransitAction : Action
 {
     public override ActionType Type => ActionType.SCENE_TRANSIT;

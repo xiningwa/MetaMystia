@@ -18,7 +18,7 @@ public enum ReadyType
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class ReadyAction : Action
 {
     public override ActionType Type => ActionType.READY;

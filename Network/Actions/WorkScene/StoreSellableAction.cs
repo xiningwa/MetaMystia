@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class StoreSellableAction : Action
 {
     public override ActionType Type => ActionType.STORE_SELLABLE;

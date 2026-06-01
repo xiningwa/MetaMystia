@@ -10,7 +10,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class GetCollectableAction : Action
 {
     public override ActionType Type => ActionType.GET_COLLECTABLE;

@@ -12,7 +12,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[Action.HostRelay]
+[Action.ServerRelay]
 public partial class SkinChangeAction : Action
 {
     public override ActionType Type => ActionType.SKIN_CHANGE;

@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 /// 任何玩家 → 所有玩家：通告玩家 ID 变更
 /// </summary>
 [MemoryPackable]
-[HostRelay]
+[ServerRelay]
 [AutoLog]
 public partial class PlayerIdChangeAction : Action
 {
@@ -22,7 +22,7 @@ public partial class PlayerIdChangeAction : Action
         if (PlayerManager.Peers.TryGetValue(SenderUid, out var peer))
         {
             // 主机侧校验：非法改名 → 踢出
-            if (MpManager.IsHost && !MpManager.IsValidPlayerId(NewPlayerId))
+            if (MpManager.IsServer && !MpManager.IsValidPlayerId(NewPlayerId))
             {
                 Log.LogWarning($"Kicking uid={SenderUid} ('{peer.Id}'): attempted illegal rename to '{NewPlayerId}'");
                 MpManager.DisconnectClient(SenderUid);

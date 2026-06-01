@@ -19,7 +19,7 @@ public partial class RejectAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsHost) return;
+        if (MpManager.IsServer) return;
 
         var reason = ReasonId.Get(ReasonArgs);
         Log.LogWarning($"Connection rejected: {reason}");

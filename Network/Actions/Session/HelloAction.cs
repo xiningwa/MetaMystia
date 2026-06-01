@@ -28,7 +28,7 @@ public partial class HelloAction : Action
     /// </summary>
     public override void OnReceivedDerived()
     {
-        if (!MpManager.IsHost)
+        if (!MpManager.IsServer)
         {
             Log.LogWarning("Hello received by non-host, ignoring");
             return;

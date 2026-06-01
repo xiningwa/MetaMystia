@@ -267,7 +267,7 @@ public abstract partial class Action
     /// </summary>
     protected void SendToClient(int uid)
     {
-        if (!MpManager.IsHost || !MpManager.IsConnected) return;
+        if (!MpManager.IsServer || !MpManager.IsConnected) return;
         LogActionSend();
         var packet = NetPacket.FromSingleAction(this);
         MpManager.SendToClient(uid, packet);
@@ -278,7 +278,7 @@ public abstract partial class Action
     /// 当客机发送一个带有此特性的 Action 时，主机处理后会自动转发给其他所有客机。
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class HostRelayAttribute : Attribute { }
+    public class ServerRelayAttribute : Attribute { }
 
     public static void RegisterAllFormatter()
     {

@@ -21,7 +21,7 @@ public partial class GuestInviteAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (!MpManager.IsConnectedHost) return;
+        if (!MpManager.IsConnectedServer) return;
 
         var invitedGuestIds = InvitedGuestIds ?? [];
         PluginManager.Instance.RunOnMainThread(() =>

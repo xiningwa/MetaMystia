@@ -10,7 +10,7 @@ namespace MetaMystia.Network;
 /// 任何玩家 → 所有玩家：发送聊天消息
 /// </summary>
 [MemoryPackable]
-[HostRelay]
+[ServerRelay]
 public partial class MessageAction : Action
 {
     public override ActionType Type => ActionType.MESSAGE;

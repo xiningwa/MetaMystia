@@ -75,7 +75,7 @@ public partial class WorkSceneServePannelPatch
         }
 
         if (MpManager.ShouldSkipAction) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnConfirmServe(__instance.currentGuestController, __instance.willServeFood, __instance.willServeBeverage);
             return RunOriginal;
@@ -102,7 +102,7 @@ public partial class WorkSceneServePannelPatch
             return SkipOriginal;
         }
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             Log.Warning($"Send {toSend?.Text?.BriefName}");
             GuestFSM.OnServe(__instance.currentGuestController, toSend, toSend.Type);
@@ -132,7 +132,7 @@ public partial class WorkSceneServePannelPatch
             return SkipOriginal;
         }
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             Log.Warning($"Cancel {toCancel?.Text?.BriefName}");
             GuestFSM.OnServe(__instance.currentGuestController, null, toCancel.Type);

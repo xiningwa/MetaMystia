@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 /// 任何玩家 → 所有玩家：通告玩家所选店铺地点和等级
 /// </summary>
 [MemoryPackable]
-[HostRelay]
+[ServerRelay]
 public partial class SelectAction : Action
 {
     public override ActionType Type => ActionType.SELECT;
@@ -26,7 +26,7 @@ public partial class SelectAction : Action
             InGameConsole.ShowPassive(TextId.PeerSelectedIzakaya.Get(
                 $"{peerName}", $"{Utils.GetMapLabelNameCN(MapLabel)} {Utils.GetMapLevelNameCN(MapLevel)}"));
 
-            if (MpManager.IsHost)
+            if (MpManager.IsServer)
             {
                 // 主机收到 SELECT 后自动检查全员是否一致
                 IzakayaSelectorPanelPatch.TryConfirmSelection();

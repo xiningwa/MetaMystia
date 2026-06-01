@@ -155,7 +155,7 @@ public partial class GuestsManagerPatch
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             var cook = NightScene.CookingUtility.CookSystemManager.Instance;
             for (var attempt = 0; attempt < MaxNormalGuestRerollAttempts; attempt++)
@@ -219,7 +219,7 @@ public partial class GuestsManagerPatch
             return SkipOriginal;
         }
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             if (!TryReplaceUnavailableNormalGuests(ref normalGuests))
             {
@@ -281,7 +281,7 @@ public partial class GuestsManagerPatch
             __result = null;
             return SkipOriginal;
         }
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             if (TryResolveAvailableSpecialGuest(ref id)) return RunOriginal;
             __result = null;
@@ -324,7 +324,7 @@ public partial class GuestsManagerPatch
     {
         if (IsReimuProtectionGuest(initializedController)) return;
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             // 将主机生成的顾客信息广播给客机
             var normalSpawnArgs = initializedController.ControllType == GuestsManager.GuestType.Normal
@@ -347,13 +347,13 @@ public partial class GuestsManagerPatch
         if (SkipPlayerRepellPatch.TryConsume())
         {
             SkipRepellInternalPatch.Grant(); // TODO
-            if (MpManager.IsConnectedHost) SkipRepellInternalLeaveBroadcastPatch.Grant();
+            if (MpManager.IsConnectedServer) SkipRepellInternalLeaveBroadcastPatch.Grant();
             return RunOriginal;
         }
 
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             SkipRepellInternalLeaveBroadcastPatch.Grant();
             GuestFSM.OnPlayerRepell(deskCode);
@@ -391,7 +391,7 @@ public partial class GuestsManagerPatch
     public static bool EvaluateOrder_Prefix(GuestGroupController toEvaluate)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             return RunOriginal;
         }
@@ -416,7 +416,7 @@ public partial class GuestsManagerPatch
     public static void EvaluateOrder_Postfix(GuestGroupController toEvaluate, bool isTriggerByPartner)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             // 主机端直接记录评价结束，推进 Evaluating -> EatingDelay
             GuestFSM.OnEatingDelay(toEvaluate);
@@ -455,7 +455,7 @@ public partial class GuestsManagerPatch
             // 则同样设置 SkipLeaveFromDeskPatch 以正常执行 LeaveFromDesk
             SkipLeaveFromDeskPatch.Grant();
         }
-        if (skipLeaveBroadcast && MpManager.IsConnectedHost)
+        if (skipLeaveBroadcast && MpManager.IsConnectedServer)
         {
             SkipLeaveFromDeskBroadcastPatch.Grant();
         }
@@ -519,7 +519,7 @@ public partial class GuestsManagerPatch
     public static bool MainOrderCycle_Prefix(GuestGroupController toCycle)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             return RunOriginal;
         }
@@ -541,7 +541,7 @@ public partial class GuestsManagerPatch
     public static bool CheckAndSendFromQueue_Prefix()
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             // 主机需要精准捕获成功出队入座的顾客，因此劫持到 HijackCheckAndSendFromQueue 进行精准捕获与同步
             GuestService.HijackCheckAndSendFromQueue();
@@ -566,7 +566,7 @@ public partial class GuestsManagerPatch
     public static bool OnPatientDepleted_Prefix(GuestGroupController guest)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnPatientDepletedInQueue(guest);
         }
@@ -589,7 +589,7 @@ public partial class GuestsManagerPatch
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
         if (NightSceneEventManagerPatch.IsHostCloseReplay) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             IzakayaCloseAction.Broadcast();
             return RunOriginal;
@@ -624,7 +624,7 @@ public partial class GuestsManagerPatch
     public static bool PatientDepletedLeave_Prefix(GuestGroupController toPatientDepletedLeave)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             // 上游 PatientDepletedDeskAction 已会让客机完整重放 PatientDepletedLeave 链路
             // (含末端 LeaveFromDesk)，避免 LeaveFromDesk_Postfix 再发 GuestLeaveAction。
@@ -662,7 +662,7 @@ public partial class GuestsManagerPatch
         }
 
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsConnectedServer)
         {
             GuestFSM.OnLeaveFromDesk(
                 toLeave,

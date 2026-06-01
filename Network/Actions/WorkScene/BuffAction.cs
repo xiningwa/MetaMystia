@@ -37,7 +37,7 @@ public static class QTEBuffExtension
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class BuffAction : Action
 {
     public override ActionType Type => ActionType.BUFF;

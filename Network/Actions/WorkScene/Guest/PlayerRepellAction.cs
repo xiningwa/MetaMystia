@@ -4,7 +4,7 @@ namespace MetaMystia.Network;
 
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class PlayerRepellAction : Action
 {
     public override ActionType Type => ActionType.PlayerRepellAction;

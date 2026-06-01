@@ -16,7 +16,7 @@ public static partial class MpManager
 {
     public enum ROLE
     {
-        Host,
+        Server,
         Client
     }
 
@@ -75,14 +75,14 @@ public static partial class MpManager
     private static TcpClientWrapper client = null;
     private static ROLE Role;
     public static bool IsRunning { get; private set; }
-    public static bool IsHost => Role == ROLE.Host;
+    public static bool IsServer => Role == ROLE.Server;
     public static bool IsClient => Role == ROLE.Client;
     public static bool IsConnecting { get; private set; } = false;
-    public static bool IsConnected => (IsHost ? server?.HasAnyClient : client?.IsConnected) ?? false;
+    public static bool IsConnected => (IsServer ? server?.HasAnyClient : client?.IsConnected) ?? false;
     public static bool IsConnectedClient => IsConnected && IsClient;
-    public static bool IsConnectedHost => IsConnected && IsHost;
-    public static string RoleTag => IsHost ? "[S]" : "[C]";
-    public static string RoleName => IsHost ? "Host" : "Client";
+    public static bool IsConnectedServer => IsConnected && IsServer;
+    public static string RoleTag => IsServer ? "[S]" : "[C]";
+    public static string RoleName => IsServer ? "Server" : "Client";
 
     private static ConcurrentDictionary<int, long> pingSendTimes = new();
     public static long TimestampNow => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -118,8 +118,8 @@ public static partial class MpManager
 
     public static void SwitchRole(bool stop_existed_server = true)
     {
-        Log.Message($"Switching role from {Role} to {(IsHost ? "Client" : "Host")}");
-        if (IsHost)
+        Log.Message($"Switching role from {Role} to {(IsServer ? "Client" : "Host")}");
+        if (IsServer)
         {
             if (stop_existed_server)
             {
@@ -133,11 +133,11 @@ public static partial class MpManager
             client?.Close();
             server = new(CurrentPort, EnableIPv6);
             server.Start();
-            Role = ROLE.Host;
+            Role = ROLE.Server;
         }
     }
 
-    public static bool Start(ROLE r = ROLE.Host, int port = -1)
+    public static bool Start(ROLE r = ROLE.Server, int port = -1)
     {
         if (port == -1) port = ConfigPort;
         Log.Info($"{DebugText}");
@@ -161,7 +161,7 @@ public static partial class MpManager
 
         switch (r)
         {
-            case ROLE.Host:
+            case ROLE.Server:
                 PlayerManager.Local.Uid = HOST_UID;
                 server = new(CurrentPort, EnableIPv6);
                 server.Start();
@@ -227,7 +227,7 @@ public static partial class MpManager
         try
         {
             IsConnecting = true;
-            if (IsHost)
+            if (IsServer)
             {
                 SwitchRole(stop_existed_server);
             }
@@ -316,7 +316,7 @@ public static partial class MpManager
     /// </summary>
     private static void CheckContinueAfterDisconnect(int disconnectedUid, string disconnectedName)
     {
-        if (!IsHost) return;
+        if (!IsServer) return;
         disconnectedName ??= $"uid={disconnectedUid}";
 
         // 没有剩余 peer 时不提示 continue（单人模式不需要）
@@ -360,7 +360,7 @@ public static partial class MpManager
     }
 
     /// <summary>
-    /// 主机侧：收到客机发来的 Action。主机先处理，如果 Action 标记了 HostRelay 则转发。
+    /// 主机侧：收到客机发来的 Action。主机先处理，如果 Action 标记了 ServerRelay 则转发。
     /// 使用 zero-copy relay：直接在原始字节上修改 SenderUid 并广播，跳过 reserialize。
     /// </summary>
     public static void OnActionFromClient(Network.Action action, int clientUid, byte[] rawBody)
@@ -370,7 +370,7 @@ public static partial class MpManager
             action.SenderUid = clientUid;
             action.OnReceived();
 
-            if (action.GetType().GetCustomAttributes(typeof(Network.Action.HostRelayAttribute), false).Length > 0)
+            if (action.GetType().GetCustomAttributes(typeof(Network.Action.ServerRelayAttribute), false).Length > 0)
             {
                 BitConverter.GetBytes(clientUid).CopyTo(rawBody, Network.RelayConstants.SenderUidOffset);
                 byte[] framed = new byte[4 + rawBody.Length];
@@ -396,7 +396,7 @@ public static partial class MpManager
     /// </summary>
     public static void SendToHostOrBroadcast(NetPacket packet)
     {
-        if (IsHost)
+        if (IsServer)
         {
             server?.Broadcast(packet);
         }
@@ -411,7 +411,7 @@ public static partial class MpManager
     /// </summary>
     public static void SendToHostOrBroadcastLowPriority(NetPacket packet)
     {
-        if (IsHost)
+        if (IsServer)
         {
             server?.BroadcastLowPriority(packet);
         }
@@ -435,7 +435,7 @@ public static partial class MpManager
     /// </summary>
     public static void SendToClient(int uid, NetPacket packet)
     {
-        if (!IsHost) return;
+        if (!IsServer) return;
         server?.SendTo(uid, packet);
     }
 
@@ -444,7 +444,7 @@ public static partial class MpManager
     /// </summary>
     public static void SendToAllExcept(int exceptUid, NetPacket packet)
     {
-        if (!IsHost) return;
+        if (!IsServer) return;
         server?.SendToExcept(exceptUid, packet);
     }
 
@@ -454,7 +454,7 @@ public static partial class MpManager
     {
         if (IsConnected)
         {
-            if (IsHost)
+            if (IsServer)
             {
                 server.DisconnectAllClients();
                 PlayerManager.ClearPeers();
@@ -474,7 +474,7 @@ public static partial class MpManager
     /// </summary>
     public static void DisconnectClient(int uid)
     {
-        if (!IsHost) return;
+        if (!IsServer) return;
         server?.DisconnectClient(uid);
         // 清理幽灵 Peer (Socket 意外断开而 PlayerManager 中残留 Peer)
         if (PlayerManager.Peers.ContainsKey(uid))
@@ -494,7 +494,7 @@ public static partial class MpManager
         var t = TimestampNow;
         int id = _pingId++;
         pingSendTimes[id] = t;
-        if (IsHost)
+        if (IsServer)
         {
             // 主机向所有客机发 Ping
             var action = new PingAction { Id = id };
@@ -592,7 +592,7 @@ public static partial class MpManager
 
     public static void DayOver()
     {
-        if (!IsConnectedHost) return;
+        if (!IsConnectedServer) return;
         Log.Message($"DayOver check: AllDayOver={PlayerManager.AllDayOver}");
         if (PlayerManager.AllDayOver)
         {
@@ -609,7 +609,7 @@ public static partial class MpManager
 
     public static void PrepOver()
     {
-        if (!IsConnectedHost) return;
+        if (!IsConnectedServer) return;
         Log.Message($"PrepOver check: AllPrepOver={PlayerManager.AllPrepOver}");
 
         if (PlayerManager.AllPrepOver)
@@ -627,7 +627,7 @@ public static partial class MpManager
     /// <returns>是否成功执行</returns>
     public static bool ContinueDay()
     {
-        if (!IsHost)
+        if (!IsServer)
         {
             Log.LogWarning("ContinueDay: only host can execute");
             return false;
@@ -664,7 +664,7 @@ public static partial class MpManager
     /// <returns>是否成功执行</returns>
     public static bool ContinuePrep()
     {
-        if (!IsHost)
+        if (!IsServer)
         {
             Log.LogWarning("ContinuePrep: only host can execute");
             return false;

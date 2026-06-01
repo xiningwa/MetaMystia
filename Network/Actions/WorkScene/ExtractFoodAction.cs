@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[ServerRelay]
 public partial class ExtractFoodAction : Action
 {
     public override ActionType Type => ActionType.EXTRACT_FOOD;
