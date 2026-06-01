@@ -18,7 +18,7 @@ public partial class PeerJoinAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsServer) return;
+        if (MpManager.IsRoomHost) return;
 
         if (PeerInfo.Uid == PlayerManager.Local.Uid) return;
 
@@ -46,7 +46,7 @@ public partial class PeerJoinAction : Action
     /// </summary>
     public static void BroadcastExcept(int newPeerUid, PlayerInfo peerInfo)
     {
-        if (!MpManager.IsServer) return;
+        if (!MpManager.IsRoomHost) return;
         if (PlayerManager.Peers.Count <= 1) return;
 
         var action = new PeerJoinAction

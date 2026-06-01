@@ -236,6 +236,56 @@ public abstract partial class Action
         MpManager.SendToHostOrBroadcast(packet);
     }
 
+    protected void SendToAuthority()
+    {
+        if (!MpManager.IsConnected) return;
+        if (ShouldDiscardOnStory())
+        {
+            Log.Info($"{MpManager.RoleTag} Will not send (in story): {ActionName}");
+            return;
+        }
+
+        LogActionSend();
+
+        var packet = NetPacket.FromSingleAction(this);
+        MpManager.SendToAuthority(packet);
+    }
+
+    protected void BroadcastRoom()
+    {
+        if (!MpManager.IsConnectedServer) return;
+        if (ShouldDiscardOnStory())
+        {
+            Log.Info($"{MpManager.RoleTag} Will not send (in story): {ActionName}");
+            return;
+        }
+
+        LogActionSend();
+
+        var packet = NetPacket.FromSingleAction(this);
+        MpManager.BroadcastRoom(packet);
+    }
+
+    protected void RelayRoom()
+    {
+        SendToHostOrBroadcast();
+    }
+
+    protected void BroadcastPublic()
+    {
+        if (!MpManager.CanSeeOnlinePlayers) return;
+        if (ShouldDiscardOnStory())
+        {
+            Log.Info($"{MpManager.RoleTag} Will not send (in story): {ActionName}");
+            return;
+        }
+
+        LogActionSend();
+
+        var packet = NetPacket.FromSingleAction(this);
+        MpManager.BroadcastPublic(packet);
+    }
+
     /// <summary>
     /// 低优先级发送（拥塞时丢弃）
     /// </summary>
@@ -248,6 +298,17 @@ public abstract partial class Action
 
         var packet = NetPacket.FromSingleAction(this);
         MpManager.SendToHostOrBroadcastLowPriority(packet);
+    }
+
+    protected void BroadcastPublicLowPriority()
+    {
+        if (!MpManager.CanSeeOnlinePlayers) return;
+        if (ShouldDiscardOnStory()) return;
+
+        LogActionSend();
+
+        var packet = NetPacket.FromSingleAction(this);
+        MpManager.BroadcastPublicLowPriority(packet);
     }
 
     protected void SendToPeer(long peerId)
@@ -270,18 +331,30 @@ public abstract partial class Action
     /// </summary>
     protected void SendToClient(int uid)
     {
-        if (!MpManager.IsServer || !MpManager.IsConnected) return;
+        if (!MpManager.IsRoomHost) return;
         LogActionSend();
         var packet = NetPacket.FromSingleAction(this);
         MpManager.SendToClient(uid, packet);
     }
 
     /// <summary>
-    /// 标记需要主机转发给其他客机的 Action 类型。
-    /// 当客机发送一个带有此特性的 Action 时，主机处理后会自动转发给其他所有客机。
+    /// 标记需要房主/转发服务器转发给房间内其他玩家的 Action 类型。
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class ServerRelayAttribute : Attribute { }
+    public class RoomRelayAttribute : Attribute { }
+
+    /// <summary>
+    /// 标记需要转发给公共在线同步域内其他玩家的 Action 类型。
+    /// Direct LAN 模式下没有公共同步域，房间内会降级为 RoomRelay。
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    public class PublicRelayAttribute : Attribute { }
+
+    /// <summary>
+    /// 旧名兼容：等价于 <see cref="RoomRelayAttribute"/>。
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    public class ServerRelayAttribute : RoomRelayAttribute { }
 
     public static void RegisterAllFormatter()
     {

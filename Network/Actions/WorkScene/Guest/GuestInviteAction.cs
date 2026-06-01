@@ -20,7 +20,7 @@ public partial class GuestInviteAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (!MpManager.IsConnectedServer) return;
+        if (!MpManager.IsRoomHost) return;
 
         var invitedGuestIds = InvitedGuestIds ?? [];
         PluginManager.Instance.RunOnMainThread(() =>
@@ -37,7 +37,7 @@ public partial class GuestInviteAction : Action
 
     public static void Send(List<int> invitedGuestIds)
     {
-        if (!MpManager.IsConnectedClient) return;
+        if (!MpManager.IsRoomClient) return;
 
         new GuestInviteAction
         {

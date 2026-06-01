@@ -19,7 +19,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[PublicRelay]
 public partial class SceneTransitAction : Action
 {
 
@@ -37,6 +37,6 @@ public partial class SceneTransitAction : Action
         {
             Scene = scene,
         };
-        action.SendToHostOrBroadcast();
+        action.BroadcastPublic();
     }
 }

@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class StoreFoodAction : Action
 {
     public SellableFood Food { get; set; }

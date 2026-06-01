@@ -56,7 +56,7 @@ public static partial class NightSceneEventManagerPatch
     [HarmonyPrefix]
     public static bool ModifyTotalTime_Prefix(EventManager __instance, int time)
     {
-        if (!MpManager.IsConnectedClient || IsHostCloseReplay || time >= 0) return RunOriginal;
+        if (!MpManager.IsRoomClient || IsHostCloseReplay || time >= 0) return RunOriginal;
 
         var remaining = __instance.TotalCountDown + __instance.extraCountDown;
         return remaining + time <= 0 ? SkipOriginal : RunOriginal;
@@ -71,8 +71,8 @@ public static partial class NightSceneEventManagerPatch
     public static bool FundEdit_Prefix()
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedServer) return RunOriginal;
-        if (MpManager.IsConnectedClient) return SkipOriginal;
+        if (MpManager.IsRoomHost) return RunOriginal;
+        if (MpManager.IsRoomClient) return SkipOriginal;
         return RunOriginal;
     }
 
@@ -89,7 +89,7 @@ public static partial class NightSceneEventManagerPatch
     public static void FundEdit_Postfix(float value, EventManager.MathOperation mathOperation)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             FundEditAction.Send(value, mathOperation);
         }
@@ -100,8 +100,8 @@ public static partial class NightSceneEventManagerPatch
     public static bool TipEdit_Prefix()
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedServer) return RunOriginal;
-        if (MpManager.IsConnectedClient) return SkipOriginal;
+        if (MpManager.IsRoomHost) return RunOriginal;
+        if (MpManager.IsRoomClient) return SkipOriginal;
         return RunOriginal;
     }
 
@@ -121,7 +121,7 @@ public static partial class NightSceneEventManagerPatch
     public static void TipEdit_Postfix(int value, EventManager.ServeType serveType, float comboBuff, float moodBuff, float extraBuff)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             TipEditAction.Send(value, serveType, comboBuff, moodBuff, extraBuff);
         }
@@ -132,8 +132,8 @@ public static partial class NightSceneEventManagerPatch
     public static bool ExpEdit_Prefix()
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedServer) return RunOriginal;
-        if (MpManager.IsConnectedClient) return SkipOriginal;
+        if (MpManager.IsRoomHost) return RunOriginal;
+        if (MpManager.IsRoomClient) return SkipOriginal;
         return RunOriginal;
     }
 
@@ -151,7 +151,7 @@ public static partial class NightSceneEventManagerPatch
     public static void ExpEdit_Postfix(float value, EventManager.MathOperation mathOperation)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             ExpEditAction.Send(value, mathOperation);
         }
@@ -162,8 +162,8 @@ public static partial class NightSceneEventManagerPatch
     public static bool PassionEdit_Prefix()
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return RunOriginal;
-        if (MpManager.IsConnectedServer) return RunOriginal;
-        if (MpManager.IsConnectedClient) return SkipOriginal;
+        if (MpManager.IsRoomHost) return RunOriginal;
+        if (MpManager.IsRoomClient) return SkipOriginal;
         return RunOriginal;
     }
 
@@ -181,7 +181,7 @@ public static partial class NightSceneEventManagerPatch
     public static void PassionEdit_Postfix(float value, EventManager.MathOperation mathOperation)
     {
         if (MpManager.ShouldSkipAction || !MpManager.IsConnected) return;
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             PassionEditAction.Send(value, mathOperation);
         }

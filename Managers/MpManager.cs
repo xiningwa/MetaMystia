@@ -74,15 +74,29 @@ public static partial class MpManager
     private static TcpServer server = null;
     private static TcpClientWrapper client = null;
     private static ROLE Role;
+    public static MpSession Session { get; } = new();
     public static bool IsRunning { get; private set; }
-    public static bool IsServer => Role == ROLE.Server;
-    public static bool IsClient => Role == ROLE.Client;
+    public static bool IsDirectHost => Session.TransportKind == TransportKind.DirectHost;
+    public static bool IsDirectClient => Session.TransportKind == TransportKind.DirectClient;
+    public static bool IsRelayClient => Session.TransportKind == TransportKind.RelayClient;
+    public static bool IsServer => IsRoomHost;
+    public static bool IsClient => IsRoomClient || IsInPublicScope;
     public static bool IsConnecting { get; private set; } = false;
-    public static bool IsConnected => (IsServer ? server?.HasAnyClient : client?.IsConnected) ?? false;
-    public static bool IsConnectedClient => IsConnected && IsClient;
-    public static bool IsConnectedServer => IsConnected && IsServer;
-    public static string RoleTag => IsServer ? "[S]" : "[C]";
-    public static string RoleName => IsServer ? "Server" : "Client";
+    public static bool IsOnline => Session.IsOnline;
+    public static bool CanSeeOnlinePlayers => Session.CanSeeOnlinePlayers;
+    public static bool IsInPublicScope => Session.IsInPublicScope;
+    public static bool IsInRoom => Session.IsInRoom;
+    public static bool IsRoomHost => Session.IsRoomHost;
+    public static bool IsRoomClient => Session.IsRoomClient;
+    public static bool HasRoomConnection => IsRoomHost
+        ? server?.HasAnyClient == true
+        : IsRoomClient && client?.IsConnected == true;
+    public static bool IsGameplaySyncActive => IsInRoom && HasRoomConnection && !InStory;
+    public static bool IsConnected => IsInRoom && HasRoomConnection;
+    public static bool IsConnectedClient => IsRoomClient && HasRoomConnection;
+    public static bool IsConnectedServer => IsRoomHost && HasRoomConnection;
+    public static string RoleTag => IsRoomHost ? "[H]" : IsRoomClient ? "[C]" : IsInPublicScope ? "[P]" : "[N]";
+    public static string RoleName => IsRoomHost ? "Host" : IsRoomClient ? "Client" : IsInPublicScope ? "Online" : "Offline";
 
     private static ConcurrentDictionary<int, long> pingSendTimes = new();
     public static long TimestampNow => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -109,7 +123,7 @@ public static partial class MpManager
              || director.state == UnityEngine.Playables.PlayState.Delayed);
     }
 
-    public static bool ShouldSkipAction => !IsConnected || InStory;
+    public static bool ShouldSkipAction => !IsGameplaySyncActive;
     #endregion
 
     public const string PeerGetCharacterUnitNotNullCommand = "PeerGetCharacterUnitNotNullCommand";
@@ -118,8 +132,8 @@ public static partial class MpManager
 
     public static void SwitchRole(bool stop_existed_server = true)
     {
-        Log.Message($"Switching role from {Role} to {(IsServer ? "Client" : "Host")}");
-        if (IsServer)
+        Log.Message($"Switching role from {Role} to {(IsRoomHost ? "Client" : "Host")}");
+        if (IsRoomHost)
         {
             if (stop_existed_server)
             {
@@ -127,6 +141,7 @@ public static partial class MpManager
                 server = null;
             }
             Role = ROLE.Client;
+            Session.EnterDirectClientRoom();
         }
         else
         {
@@ -134,6 +149,7 @@ public static partial class MpManager
             server = new(CurrentPort, EnableIPv6);
             server.Start();
             Role = ROLE.Server;
+            Session.EnterDirectHostRoom();
         }
     }
 
@@ -163,12 +179,14 @@ public static partial class MpManager
         {
             case ROLE.Server:
                 PlayerManager.Local.Uid = HOST_UID;
+                Session.EnterDirectHostRoom();
                 server = new(CurrentPort, EnableIPv6);
                 server.Start();
                 Log.LogInfo($"Starting MpManager as host on port {CurrentPort}");
                 break;
             case ROLE.Client:
                 PlayerManager.Local.Uid = UNASSIGNED_UID;
+                Session.EnterDirectClientRoom();
                 Log.LogInfo("Starting MpManager as client");
                 break;
         }
@@ -189,6 +207,7 @@ public static partial class MpManager
             server = null;
             client?.Close();
             client = null;
+            Session.Reset();
         }
         catch (Exception e)
         {
@@ -202,6 +221,43 @@ public static partial class MpManager
         var port = CurrentPort;
         Stop();
         return Start(Role, port);
+    }
+
+    public static void EnterRelayPublic()
+    {
+        IsRunning = true;
+        Role = ROLE.Client;
+        PlayerManager.Local.Uid = UNASSIGNED_UID;
+        PlayerManager.Local.Id = PlayerId;
+        Session.EnterRelayPublic();
+        Log.LogInfo("Entered relay public sync scope");
+    }
+
+    public static void EnterRelayRoomAsHost(string roomId, int hostUid = HOST_UID)
+    {
+        IsRunning = true;
+        Role = ROLE.Server;
+        PlayerManager.Local.Uid = hostUid;
+        Session.EnterRelayRoom(RoomRole.Host, roomId, hostUid);
+        Log.LogInfo($"Entered relay room '{roomId}' as host uid={hostUid}");
+    }
+
+    public static void EnterRelayRoomAsClient(string roomId, int localUid, int hostUid = HOST_UID)
+    {
+        IsRunning = true;
+        Role = ROLE.Client;
+        PlayerManager.Local.Uid = localUid;
+        Session.EnterRelayRoom(RoomRole.Client, roomId, hostUid);
+        Log.LogInfo($"Entered relay room '{roomId}' as client uid={localUid}, host={hostUid}");
+    }
+
+    public static void LeaveRelayRoomToPublic()
+    {
+        PlayerManager.ClearRoomPeers();
+        CommandScheduler.RemoveKeyFromKeyQueue(PeerGetCharacterUnitNotNullCommand);
+        CommandScheduler.CancelInterval(SyncActionCommandID);
+        Session.LeaveRoomToRelayPublic();
+        Log.LogInfo("Left relay room and returned to public sync scope");
     }
 
     public static async Task<bool> ConnectToPeerAsync(string peerIp, int port = -1, bool stop_existed_server = true)
@@ -227,10 +283,11 @@ public static partial class MpManager
         try
         {
             IsConnecting = true;
-            if (IsServer)
+            if (IsRoomHost)
             {
                 SwitchRole(stop_existed_server);
             }
+            Session.EnterDirectClientRoom();
             InGameConsole.LogToConsole(TextId.MpConnecting.Get(peerIp, port));
             Log.LogInfo($"[C] Connecting to {peerIp}:{port}...");
             client = new(peerIp, port);
@@ -316,7 +373,7 @@ public static partial class MpManager
     /// </summary>
     private static void CheckContinueAfterDisconnect(int disconnectedUid, string disconnectedName)
     {
-        if (!IsServer) return;
+        if (!IsRoomHost) return;
         disconnectedName ??= $"uid={disconnectedUid}";
 
         // 没有剩余 peer 时不提示 continue（单人模式不需要）
@@ -360,7 +417,7 @@ public static partial class MpManager
     }
 
     /// <summary>
-    /// 主机侧：收到客机发来的 Action。主机先处理，如果 Action 标记了 ServerRelay 则转发。
+    /// 主机侧：收到客机发来的 Action。主机先处理，如果 Action 标记了 RoomRelay/PublicRelay 则转发。
     /// 使用 zero-copy relay：直接在原始字节上修改 SenderUid 并广播，跳过 reserialize。
     /// </summary>
     public static void OnActionFromClient(Network.Action action, int clientUid, byte[] rawBody)
@@ -370,7 +427,11 @@ public static partial class MpManager
             action.SenderUid = clientUid;
             action.OnReceived();
 
-            if (action.GetType().GetCustomAttributes(typeof(Network.Action.ServerRelayAttribute), false).Length > 0)
+            var actionType = action.GetType();
+            var shouldRelay =
+                actionType.GetCustomAttributes(typeof(Network.Action.RoomRelayAttribute), false).Length > 0 ||
+                actionType.GetCustomAttributes(typeof(Network.Action.PublicRelayAttribute), false).Length > 0;
+            if (shouldRelay)
             {
                 BitConverter.GetBytes(clientUid).CopyTo(rawBody, Network.RelayConstants.SenderUidOffset);
                 byte[] framed = new byte[4 + rawBody.Length];
@@ -391,42 +452,90 @@ public static partial class MpManager
 
     #region 发送方法
 
-    /// <summary>
-    /// 客机→主机，或主机→所有客机广播
-    /// </summary>
-    public static void SendToHostOrBroadcast(NetPacket packet)
+    public static void SendToAuthority(NetPacket packet)
     {
-        if (IsServer)
+        if (IsRoomHost)
         {
-            server?.Broadcast(packet);
+            OnAction(packet.GetFirstAction());
         }
-        else
+        else if (IsRoomClient)
         {
             client?.Send(packet);
         }
     }
 
-    /// <summary>
-    /// 低优先级发送：拥塞时丢弃（用于位置同步等高频包）
-    /// </summary>
-    public static void SendToHostOrBroadcastLowPriority(NetPacket packet)
+    public static void BroadcastRoom(NetPacket packet)
     {
-        if (IsServer)
+        if (!IsRoomHost) return;
+        server?.Broadcast(packet);
+    }
+
+    public static void BroadcastRoomLowPriority(NetPacket packet)
+    {
+        if (!IsRoomHost) return;
+        server?.BroadcastLowPriority(packet);
+    }
+
+    public static void RelayRoom(NetPacket packet)
+    {
+        if (IsRoomHost)
+        {
+            server?.Broadcast(packet);
+        }
+        else if (IsRoomClient)
+        {
+            client?.Send(packet);
+        }
+    }
+
+    public static void RelayRoomLowPriority(NetPacket packet)
+    {
+        if (IsRoomHost)
         {
             server?.BroadcastLowPriority(packet);
         }
-        else
+        else if (IsRoomClient)
         {
             client?.SendLowPriority(packet);
         }
     }
+
+    public static void SendToPeer(int uid, NetPacket packet)
+    {
+        if (!IsRoomHost) return;
+        server?.SendTo(uid, packet);
+    }
+
+    public static void BroadcastPublic(NetPacket packet)
+    {
+        // Relay public transport will be implemented later. Direct LAN has no public scope,
+        // so public messages in a room degrade to room relay for backwards compatibility.
+        if (IsInRoom) RelayRoom(packet);
+    }
+
+    public static void BroadcastPublicLowPriority(NetPacket packet)
+    {
+        if (IsInRoom) RelayRoomLowPriority(packet);
+    }
+
+    /// <summary>
+    /// 客机→主机，或主机→所有客机广播。
+    /// Compatibility shim for old room-scoped actions.
+    /// </summary>
+    public static void SendToHostOrBroadcast(NetPacket packet) => RelayRoom(packet);
+
+    /// <summary>
+    /// 低优先级发送：拥塞时丢弃（用于位置同步等高频包）。
+    /// Compatibility shim for old room-scoped actions.
+    /// </summary>
+    public static void SendToHostOrBroadcastLowPriority(NetPacket packet) => RelayRoomLowPriority(packet);
 
     /// <summary>
     /// 客机→主机
     /// </summary>
     public static void SendToHost(NetPacket packet)
     {
-        if (!IsClient) return;
+        if (!IsRoomClient) return;
         client?.Send(packet);
     }
 
@@ -435,8 +544,7 @@ public static partial class MpManager
     /// </summary>
     public static void SendToClient(int uid, NetPacket packet)
     {
-        if (!IsServer) return;
-        server?.SendTo(uid, packet);
+        SendToPeer(uid, packet);
     }
 
     /// <summary>
@@ -444,7 +552,7 @@ public static partial class MpManager
     /// </summary>
     public static void SendToAllExcept(int exceptUid, NetPacket packet)
     {
-        if (!IsServer) return;
+        if (!IsRoomHost) return;
         server?.SendToExcept(exceptUid, packet);
     }
 
@@ -452,18 +560,41 @@ public static partial class MpManager
 
     public static void DisconnectPeer()
     {
-        if (IsConnected)
+        if (IsOnline)
         {
-            if (IsServer)
+            if (IsRoomHost)
             {
-                server.DisconnectAllClients();
-                PlayerManager.ClearPeers();
-                CommandScheduler.RemoveKeyFromKeyQueue(PeerGetCharacterUnitNotNullCommand);
-                CommandScheduler.CancelInterval(SyncActionCommandID);
+                if (IsDirectHost)
+                {
+                    server?.DisconnectAllClients();
+                    PlayerManager.ClearPeers();
+                    CommandScheduler.RemoveKeyFromKeyQueue(PeerGetCharacterUnitNotNullCommand);
+                    CommandScheduler.CancelInterval(SyncActionCommandID);
+                }
+                else
+                {
+                    LeaveRelayRoomToPublic();
+                }
+            }
+            else if (IsRoomClient)
+            {
+                if (IsDirectClient)
+                {
+                    client?.Close(); // triggers OnDisconnected() internally
+                    client = null;
+                    Session.Reset();
+                    IsRunning = false;
+                }
+                else
+                {
+                    LeaveRelayRoomToPublic();
+                }
             }
             else
             {
-                client.Close(); // triggers OnDisconnected() internally
+                PlayerManager.ClearPeers();
+                Session.Reset();
+                IsRunning = false;
             }
             Log.LogMessage("All peer connections disconnected");
         }
@@ -474,7 +605,7 @@ public static partial class MpManager
     /// </summary>
     public static void DisconnectClient(int uid)
     {
-        if (!IsServer) return;
+        if (!IsRoomHost) return;
         server?.DisconnectClient(uid);
         // 清理幽灵 Peer (Socket 意外断开而 PlayerManager 中残留 Peer)
         if (PlayerManager.Peers.ContainsKey(uid))
@@ -494,7 +625,7 @@ public static partial class MpManager
         var t = TimestampNow;
         int id = _pingId++;
         pingSendTimes[id] = t;
-        if (IsServer)
+        if (IsRoomHost)
         {
             // 主机向所有客机发 Ping
             var action = new PingAction { Id = id };
@@ -627,7 +758,7 @@ public static partial class MpManager
     /// <returns>是否成功执行</returns>
     public static bool ContinueDay()
     {
-        if (!IsServer)
+        if (!IsRoomHost)
         {
             Log.LogWarning("ContinueDay: only host can execute");
             return false;
@@ -664,7 +795,7 @@ public static partial class MpManager
     /// <returns>是否成功执行</returns>
     public static bool ContinuePrep()
     {
-        if (!IsServer)
+        if (!IsRoomHost)
         {
             Log.LogWarning("ContinuePrep: only host can execute");
             return false;

@@ -17,7 +17,7 @@ public partial class PeerLeaveAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsServer) return;
+        if (MpManager.IsRoomHost) return;
 
         if (PlayerManager.Peers.TryGetValue(PeerUid, out var peer))
         {
@@ -28,7 +28,7 @@ public partial class PeerLeaveAction : Action
 
     public static void BroadcastPeerLeave(int leavingUid)
     {
-        if (!MpManager.IsServer) return;
+        if (!MpManager.IsRoomHost) return;
         var action = new PeerLeaveAction { PeerUid = leavingUid };
         action.SendToHostOrBroadcast();
     }

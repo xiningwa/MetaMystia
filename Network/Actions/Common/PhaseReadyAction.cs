@@ -18,7 +18,7 @@ public enum ReadyType
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class PhaseReadyAction : Action
 {
     public ReadyType ReadyType;

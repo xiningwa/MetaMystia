@@ -80,7 +80,7 @@ public partial class PluginManager : MonoBehaviour
         {
             IsStatusVisible = !IsStatusVisible;
             Log.LogMessage($"Toggled text visibility: " + IsStatusVisible);
-            FloatingTextHelper.SetLabelsVisible(IsStatusVisible && MpManager.IsConnected);
+            FloatingTextHelper.SetLabelsVisible(IsStatusVisible && MpManager.CanSeeOnlinePlayers);
         }
 
         if (DEBUG)

@@ -12,7 +12,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[Action.ServerRelay]
+[Action.PublicRelay]
 public partial class PlayerChangeSkinAction : Action
 {
     public PlayerSkin Skin { get; set; }
@@ -21,7 +21,7 @@ public partial class PlayerChangeSkinAction : Action
     {
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            if (!PlayerManager.Peers.TryGetValue(SenderUid, out var peer))
+            if (!PlayerManager.TryGetVisiblePeer(SenderUid, out var peer))
             {
                 return;
             }
@@ -40,6 +40,6 @@ public partial class PlayerChangeSkinAction : Action
         {
             Skin = skin
         };
-        action.SendToHostOrBroadcast();
+        action.BroadcastPublic();
     }
 }

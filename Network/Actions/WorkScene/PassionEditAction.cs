@@ -22,7 +22,7 @@ public partial class PassionEditAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedServer) return;
+        if (MpManager.IsRoomHost) return;
 
         PluginManager.Instance.RunOnMainThread(() =>
         {

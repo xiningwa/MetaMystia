@@ -8,7 +8,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class UpdatePrepAction : Action
 {
 

@@ -166,6 +166,22 @@ public static partial class PlayerListPanel
             lines.Add((line, kvp.Key));
         }
 
+        var publicSorted = new System.Collections.Generic.SortedDictionary<int, PeerPlayer>(PlayerManager.PublicPeers);
+        foreach (var kvp in publicSorted)
+        {
+            if (PlayerManager.Peers.ContainsKey(kvp.Key)) continue;
+            var peer = kvp.Value;
+            string line = FormatPlayer(
+                peer.Uid, peer.Id, scene,
+                needsGameplayData ? peer.MapLabel : "",
+                needsGameplayData ? peer.Position : Vector2.zero,
+                peer.IsDayOver, peer.IsPrepOver,
+                peer.IzakayaMapLabel, peer.IzakayaLevel,
+                isSelf: false, isHost: false,
+                scopeTag: "Online");
+            lines.Add((line, kvp.Key));
+        }
+
         return lines;
     }
 
@@ -174,7 +190,8 @@ public static partial class PlayerListPanel
         string mapLabel, Vector2 pos,
         bool isDayOver, bool isPrepOver,
         string izakayaMapLabel, int izakayaLevel,
-        bool isSelf, bool isHost)
+        bool isSelf, bool isHost,
+        string scopeTag = null)
     {
         // 名字颜色
         string nameColor;
@@ -184,7 +201,8 @@ public static partial class PlayerListPanel
         else nameColor = ColorToHex(PeerColor);
 
         string selfTag = isSelf ? " <color=#66FF88>★</color>" : "";
-        string name = $"<color={nameColor}>[{uid}] {id}</color>{selfTag}";
+        string suffix = string.IsNullOrEmpty(scopeTag) ? "" : $" <color={ColorToHex(DimColor)}>{scopeTag}</color>";
+        string name = $"<color={nameColor}>[{uid}] {id}</color>{selfTag}{suffix}";
         string dim = ColorToHex(DimColor);
 
         return scene switch

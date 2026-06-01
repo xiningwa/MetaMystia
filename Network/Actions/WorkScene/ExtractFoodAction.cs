@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class ExtractFoodAction : Action
 {
     public SellableFood Food { get; set; }

@@ -17,7 +17,7 @@ public partial class CharacterControllerInputGeneratorComponentPatch
     [HarmonyPrefix]
     public static void UpdateInputDirection_Prefix(CharacterControllerInputGeneratorComponent __instance, ref Vector2 inputDirection)
     {
-        if (!MpManager.IsConnected)
+        if (!MpManager.CanSeeOnlinePlayers)
         {
             return;
         }

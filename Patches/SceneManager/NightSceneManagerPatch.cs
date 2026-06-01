@@ -25,11 +25,17 @@ public static partial class NightSceneManagerPatch
         PlayerManager.Local.ResetState();
         PlayerManager.InitLocalSkin();
 
-        if (!MpManager.IsConnected)
+        if (!MpManager.CanSeeOnlinePlayers)
         {
             return;
         }
         PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
+
+        if (!MpManager.IsConnected)
+        {
+            PlayerManager.SpawnPeers();
+            return;
+        }
 
         PrepSceneManager.ClearPrepTable();
 

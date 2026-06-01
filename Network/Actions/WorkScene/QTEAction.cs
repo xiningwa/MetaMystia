@@ -10,7 +10,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class QTEAction : Action
 {
     public int GridIndex { get; set; }

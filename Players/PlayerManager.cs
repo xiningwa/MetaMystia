@@ -24,16 +24,24 @@ public static partial class PlayerManager
     public static ConcurrentDictionary<int, PeerPlayer> Peers { get; } = new();
 
     /// <summary>
+    /// 同服务器公共同步域内的远程玩家（不参与房间玩法流程）。
+    /// </summary>
+    public static ConcurrentDictionary<int, PeerPlayer> PublicPeers { get; } = new();
+
+    /// <summary>
     /// 当前对端玩家（1v1 便捷访问，返回第一个 Peer）
     /// 多人场景下，调用方应遍历 Peers 集合
     /// </summary>
     public static PeerPlayer Peer => Peers.Values.FirstOrDefault();
 
+    public static bool TryGetVisiblePeer(int uid, out PeerPlayer peer) =>
+        Peers.TryGetValue(uid, out peer) || PublicPeers.TryGetValue(uid, out peer);
+
     /// <summary>
     /// 根据 UID 获取对端玩家名字，找不到则返回 "uid={uid}"
     /// </summary>
     public static string GetPeerName(int uid) =>
-        Peers.TryGetValue(uid, out var peer) ? peer.Id : $"uid={uid}";
+        TryGetVisiblePeer(uid, out var peer) ? peer.Id : $"uid={uid}";
 
     #region Local 便捷属性
 
@@ -191,6 +199,11 @@ public static partial class PlayerManager
             peer.ResetMotion();
             peer.SpawnForScene();
         }
+        foreach (var peer in PublicPeers.Values)
+        {
+            peer.ResetMotion();
+            peer.SpawnForScene();
+        }
         // 为本地玩家也添加头顶标签（等 Local unit 初始化后）
         SgrYuki.CommandScheduler.Enqueue(
             executeWhen: () => Local.unit != null,
@@ -210,6 +223,11 @@ public static partial class PlayerManager
             if (string.Equals(kvp.Value.Id, peerId, System.StringComparison.OrdinalIgnoreCase))
                 return true;
         }
+        foreach (var kvp in PublicPeers)
+        {
+            if (string.Equals(kvp.Value.Id, peerId, System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
         return false;
     }
 
@@ -222,7 +240,9 @@ public static partial class PlayerManager
         var uid = info.Uid;
         var peerId = info.PeerId;
         var skin = info.Skin;
-        
+
+        PublicPeers.TryRemove(uid, out _);
+
         if (Peers.TryGetValue(uid, out var existing))
         {
             Log.LogWarning($"Peer with uid={uid} already exists (id='{existing.Id}'), replacing");
@@ -235,6 +255,25 @@ public static partial class PlayerManager
         peer.ResetMotion();
         Peers[uid] = peer;
         Log.LogMessage($"Added peer '{peerId}' (uid={uid}, characterId='{peer.CharacterId}')");
+        return peer;
+    }
+
+    public static PeerPlayer AddPublicPeer(PlayerInfo info)
+    {
+        var uid = info.Uid;
+        var peerId = info.PeerId;
+        if (Peers.ContainsKey(uid))
+        {
+            Log.LogInfo($"Public peer '{peerId}' (uid={uid}) is already in room peers, skipping public registration");
+            return Peers[uid];
+        }
+
+        var peer = new PeerPlayer(uid, info.IncrementalDataBase) { Id = peerId };
+        if (info.Skin != null) peer.Skin = info.Skin;
+        peer.ResetState();
+        peer.ResetMotion();
+        PublicPeers[uid] = peer;
+        Log.LogMessage($"Added public peer '{peerId}' (uid={uid}, characterId='{peer.CharacterId}')");
         return peer;
     }
 
@@ -278,6 +317,10 @@ public static partial class PlayerManager
         {
             peer.UpdateVisibleState(false);
         }
+        else if (PublicPeers.TryGetValue(uid, out peer))
+        {
+            peer.UpdateVisibleState(false);
+        }
         UI.FloatingTextHelper.RemovePlayerLabel(uid);
     }
 
@@ -287,6 +330,10 @@ public static partial class PlayerManager
     public static void HideAllPeers()
     {
         foreach (var kvp in Peers)
+        {
+            kvp.Value.UpdateVisibleState(false);
+        }
+        foreach (var kvp in PublicPeers)
         {
             kvp.Value.UpdateVisibleState(false);
         }
@@ -304,6 +351,11 @@ public static partial class PlayerManager
             Log.LogMessage($"Removed peer '{peer.Id}' (uid={uid})");
             return true;
         }
+        if (PublicPeers.TryRemove(uid, out peer))
+        {
+            Log.LogMessage($"Removed public peer '{peer.Id}' (uid={uid})");
+            return true;
+        }
         return false;
     }
 
@@ -314,7 +366,19 @@ public static partial class PlayerManager
     {
         HideAllPeers();
         Peers.Clear();
+        PublicPeers.Clear();
         Log.LogMessage($"All peers cleared");
+    }
+
+    public static void ClearRoomPeers()
+    {
+        foreach (var kvp in Peers)
+        {
+            kvp.Value.UpdateVisibleState(false);
+            UI.FloatingTextHelper.RemovePlayerLabel(kvp.Key);
+        }
+        Peers.Clear();
+        Log.LogMessage("Room peers cleared");
     }
 
     #endregion
@@ -327,6 +391,10 @@ public static partial class PlayerManager
     public static void OnFixedUpdate()
     {
         foreach (var peer in Peers.Values)
+        {
+            peer.OnFixedUpdate();
+        }
+        foreach (var peer in PublicPeers.Values)
         {
             peer.OnFixedUpdate();
         }
@@ -350,7 +418,8 @@ public static partial class PlayerManager
         EnablePeerCollision(Peer?.GetCharacterUnit(), enable);
 
     public static bool IsPeerCharacter(string label) =>
-        Peers.Values.Any(p => p.CharacterId == label);
+        Peers.Values.Any(p => p.CharacterId == label) ||
+        PublicPeers.Values.Any(p => p.CharacterId == label);
 
     #endregion
 }

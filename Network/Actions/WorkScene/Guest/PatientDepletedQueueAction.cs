@@ -22,7 +22,7 @@ public partial class PatientDepletedQueueAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedServer) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         PluginManager.Instance.RunOnMainThread(() =>

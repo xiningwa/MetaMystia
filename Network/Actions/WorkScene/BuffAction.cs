@@ -37,7 +37,7 @@ public static class QTEBuffExtension
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class BuffAction : Action
 {
     public QTEBuff Buff;

@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[PublicRelay]
 public partial class MoveSyncAction : Action
 {
     public float Vx { get; set; }
@@ -28,7 +28,7 @@ public partial class MoveSyncAction : Action
     {
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            if (PlayerManager.Peers.TryGetValue(SenderUid, out var peer))
+            if (PlayerManager.TryGetVisiblePeer(SenderUid, out var peer))
                 peer.SyncFromPeer(MapLabel, IsSprinting, Speed,
                     new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py));
         });
@@ -37,7 +37,7 @@ public partial class MoveSyncAction : Action
     // Also send nightsync
     public static void Send()
     {
-        if (!MpManager.IsConnected)
+        if (!MpManager.CanSeeOnlinePlayers)
         {
             return;
         }
@@ -63,7 +63,7 @@ public partial class MoveSyncAction : Action
                 Py = position.y,
                 Speed = PlayerManager.Local.Speed
             };
-            action.SendToHostOrBroadcastLowPriority();
+            action.BroadcastPublicLowPriority();
         }
         else
         {
@@ -81,7 +81,7 @@ public partial class MoveSyncAction : Action
                 Px = position.x,
                 Py = position.y
             };
-            action.SendToHostOrBroadcastLowPriority();
+            action.BroadcastPublicLowPriority();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class ExtractFromCookerAction : Action
 {
     public int GridIndex { get; set; }

@@ -4,7 +4,7 @@ namespace MetaMystia.Network;
 
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class PlayerRepellAction : Action
 {
 

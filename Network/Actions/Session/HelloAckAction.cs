@@ -44,7 +44,7 @@ public partial class HelloAckAction : Action
     /// </summary>
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsServer)
+        if (MpManager.IsRoomHost)
         {
             Log.LogWarning("HelloAck received by host, ignoring");
             return;

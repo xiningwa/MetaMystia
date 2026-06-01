@@ -7,7 +7,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[PublicRelay]
 public partial class NightMoveSyncAction : Action
 {
     public float Vx { get; set; }
@@ -24,7 +24,7 @@ public partial class NightMoveSyncAction : Action
     {
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            if (PlayerManager.Peers.TryGetValue(SenderUid, out var peer))
+            if (PlayerManager.TryGetVisiblePeer(SenderUid, out var peer))
                 peer.NightSyncFromPeer(Speed, new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py));
         });
     }
@@ -33,4 +33,5 @@ public partial class NightMoveSyncAction : Action
 
     public new void SendToHostOrBroadcast() => base.SendToHostOrBroadcast();
     public new void SendToHostOrBroadcastLowPriority() => base.SendToHostOrBroadcastLowPriority();
+    public new void BroadcastPublicLowPriority() => base.BroadcastPublicLowPriority();
 }

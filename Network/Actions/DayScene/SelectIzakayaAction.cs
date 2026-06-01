@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 /// 任何玩家 → 所有玩家：通告玩家所选店铺地点和等级
 /// </summary>
 [MemoryPackable]
-[ServerRelay]
+[RoomRelay]
 public partial class SelectIzakayaAction : Action
 {
     public string MapLabel { get; set; } = "";

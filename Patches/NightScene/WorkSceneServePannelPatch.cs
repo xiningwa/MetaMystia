@@ -75,12 +75,12 @@ public partial class WorkSceneServePannelPatch
         }
 
         if (MpManager.ShouldSkipAction) return RunOriginal;
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             GuestFSM.OnConfirmServe(__instance.currentGuestController, __instance.willServeFood, __instance.willServeBeverage);
             return RunOriginal;
         }
-        if (MpManager.IsConnectedClient)
+        if (MpManager.IsRoomClient)
         {
             GuestFSM.OnConfirmServe(__instance.currentGuestController, __instance.willServeFood, __instance.willServeBeverage);
             return RunOriginal;
@@ -102,13 +102,13 @@ public partial class WorkSceneServePannelPatch
             return SkipOriginal;
         }
 
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             Log.Warning($"Send {toSend?.Text?.BriefName}");
             GuestFSM.OnServe(__instance.currentGuestController, toSend, toSend.Type);
             return RunOriginal;
         }
-        if (MpManager.IsConnectedClient)
+        if (MpManager.IsRoomClient)
         {
             Log.Warning($"Send {toSend?.Text?.BriefName}");
             GuestFSM.OnServe(__instance.currentGuestController, toSend, toSend.Type);
@@ -132,13 +132,13 @@ public partial class WorkSceneServePannelPatch
             return SkipOriginal;
         }
 
-        if (MpManager.IsConnectedServer)
+        if (MpManager.IsRoomHost)
         {
             Log.Warning($"Cancel {toCancel?.Text?.BriefName}");
             GuestFSM.OnServe(__instance.currentGuestController, null, toCancel.Type);
             return RunOriginal;
         }
-        if (MpManager.IsConnectedClient)
+        if (MpManager.IsRoomClient)
         {
             Log.Warning($"Cancel {toCancel?.Text?.BriefName}");
             GuestFSM.OnServe(__instance.currentGuestController, null, toCancel.Type);

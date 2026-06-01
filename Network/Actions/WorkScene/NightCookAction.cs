@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[ServerRelay]
+[RoomRelay]
 public partial class NightCookAction : Action
 {
     public int GridIndex { get; set; }
