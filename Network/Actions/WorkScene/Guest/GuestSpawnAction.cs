@@ -8,7 +8,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestSpawnAction : Action
 {
-    public override ActionType Type => ActionType.GuestSpawnAction;
+    public override ActionType Type => ActionType.GuestSpawn;
 
     public int RuntimeId { get; set; }
     public GuestSpawnInfo SpawnInfo { get; set; }

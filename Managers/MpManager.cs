@@ -265,7 +265,7 @@ public static partial class MpManager
     public static void OnHandshakeComplete(string hostId)
     {
         SceneTransitAction.Send(LocalScene);
-        CommandScheduler.EnqueueInterval(SyncActionCommandID, 0.5f, SyncAction.Send);
+        CommandScheduler.EnqueueInterval(SyncActionCommandID, 0.5f, MoveSyncAction.Send);
         InGameConsole.ShowPassiveFromAnyThread(TextId.MultiplayerConnected.Get());
     }
 
@@ -274,7 +274,7 @@ public static partial class MpManager
     /// </summary>
     public static void OnPeerHandshakeComplete(int uid)
     {
-        CommandScheduler.EnqueueInterval(SyncActionCommandID, 2f, SyncAction.Send);
+        CommandScheduler.EnqueueInterval(SyncActionCommandID, 2f, MoveSyncAction.Send);
     }
 
     /// <summary>
@@ -596,7 +596,7 @@ public static partial class MpManager
         Log.Message($"DayOver check: AllDayOver={PlayerManager.AllDayOver}");
         if (PlayerManager.AllDayOver)
         {
-            ReadyAction.Broadcast(ReadyType.DayOver);
+            PhaseReadyAction.Broadcast(ReadyType.DayOver);
 
             // For host who will not receive DayOver allready
             CommandScheduler.EnqueueWithNoCondition(() =>
@@ -614,7 +614,7 @@ public static partial class MpManager
 
         if (PlayerManager.AllPrepOver)
         {
-            ReadyAction.Broadcast(ReadyType.PrepOver);
+            PhaseReadyAction.Broadcast(ReadyType.PrepOver);
 
             // For host who will not receive PrepOver allready
             CommandScheduler.EnqueueWithNoCondition(IzakayaConfigPannelPatch.PrepOver);
@@ -649,7 +649,7 @@ public static partial class MpManager
         foreach (var peer in PlayerManager.Peers.Values)
             peer.IsDayOver = true;
 
-        ReadyAction.Broadcast(ReadyType.DayOver);
+        PhaseReadyAction.Broadcast(ReadyType.DayOver);
         CommandScheduler.EnqueueWithNoCondition(() =>
         {
             InGameConsole.ShowPassive(TextId.AllReadyTransition.Get());
@@ -685,7 +685,7 @@ public static partial class MpManager
         foreach (var peer in PlayerManager.Peers.Values)
             peer.IsPrepOver = true;
 
-        ReadyAction.Broadcast(ReadyType.PrepOver);
+        PhaseReadyAction.Broadcast(ReadyType.PrepOver);
         CommandScheduler.EnqueueWithNoCondition(IzakayaConfigPannelPatch.PrepOver);
         return true;
     }

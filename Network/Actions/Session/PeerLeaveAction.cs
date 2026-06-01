@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PeerLeaveAction : Action
 {
-    public override ActionType Type => ActionType.PEER_LEAVE;
+    public override ActionType Type => ActionType.PeerLeave;
     public int PeerUid { get; set; }
 
     protected override BepInEx.Logging.LogLevel OnReceiveLogLevel => BepInEx.Logging.LogLevel.Message;

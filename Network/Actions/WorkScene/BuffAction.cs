@@ -40,7 +40,7 @@ public static class QTEBuffExtension
 [ServerRelay]
 public partial class BuffAction : Action
 {
-    public override ActionType Type => ActionType.BUFF;
+    public override ActionType Type => ActionType.Buff;
     public QTEBuff Buff;
     protected override BepInEx.Logging.LogLevel OnReceiveLogLevel => BepInEx.Logging.LogLevel.Message;
     protected override BepInEx.Logging.LogLevel OnSendLogLevel => BepInEx.Logging.LogLevel.Message;

@@ -14,7 +14,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestKillAction : Action
 {
-    public override ActionType Type => ActionType.GuestKillAction;
+    public override ActionType Type => ActionType.GuestKill;
 
     public int RuntimeId { get; set; }
     public GuestFSM.State HostStateBeforeKill { get; set; }   // 调试用：观测主客状态分歧

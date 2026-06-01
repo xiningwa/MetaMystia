@@ -13,9 +13,9 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 [AutoLog]
 [Action.ServerRelay]
-public partial class SkinChangeAction : Action
+public partial class PlayerChangeSkinAction : Action
 {
-    public override ActionType Type => ActionType.SKIN_CHANGE;
+    public override ActionType Type => ActionType.PlayerChangeSkin;
     public PlayerSkin Skin { get; set; }
 
     public override void OnReceivedDerived()
@@ -37,7 +37,7 @@ public partial class SkinChangeAction : Action
 
     public static void Send(PlayerSkin skin)
     {
-        var action = new SkinChangeAction
+        var action = new PlayerChangeSkinAction
         {
             Skin = skin
         };

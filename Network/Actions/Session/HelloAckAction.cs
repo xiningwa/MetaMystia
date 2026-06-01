@@ -12,7 +12,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class HelloAckAction : Action
 {
-    public override ActionType Type => ActionType.HELLO_ACK;
+    public override ActionType Type => ActionType.HelloAck;
     public int AssignedUid { get; set; }
 
     /// <summary>

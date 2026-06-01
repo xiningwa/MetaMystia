@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class RejectAction : Action
 {
-    public override ActionType Type => ActionType.REJECT;
+    public override ActionType Type => ActionType.Reject;
     public TextId ReasonId { get; set; }
     public string[] ReasonArgs { get; set; } = [];
 

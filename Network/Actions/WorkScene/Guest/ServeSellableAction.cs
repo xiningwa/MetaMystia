@@ -13,7 +13,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ServeSellableAction : Action
 {
-    public override ActionType Type => ActionType.ServeSellableAction;
+    public override ActionType Type => ActionType.ServeSellable;
     public int RuntimeId { get; set; }
     public int OrderSeq { get; set; }
     public SellableFood Requested { get; set; }

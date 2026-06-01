@@ -22,7 +22,7 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class SceneTransitAction : Action
 {
-    public override ActionType Type => ActionType.SCENE_TRANSIT;
+    public override ActionType Type => ActionType.SceneTransit;
 
     [MemoryPackAllowSerialize]
     public Common.UI.Scene Scene { get; set; }

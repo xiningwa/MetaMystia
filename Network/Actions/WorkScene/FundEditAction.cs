@@ -14,7 +14,7 @@ namespace MetaMystia.Network;
 
 public partial class FundEditAction : Action
 {
-    public override ActionType Type => ActionType.FundEditAction;
+    public override ActionType Type => ActionType.FundEdit;
 
     public float Value { get; set; }
     public EventManager.MathOperation MathOp { get; set; }

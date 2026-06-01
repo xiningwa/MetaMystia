@@ -8,9 +8,9 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 [AutoLog]
 [ServerRelay]
-public partial class NightSyncAction : Action
+public partial class NightMoveSyncAction : Action
 {
-    public override ActionType Type => ActionType.NIGHTSYNC;
+    public override ActionType Type => ActionType.NightMoveSync;
     public float Vx { get; set; }
     public float Vy { get; set; }
     public float Px { get; set; }
@@ -30,7 +30,7 @@ public partial class NightSyncAction : Action
         });
     }
 
-    public static void Send() => SyncAction.Send();
+    public static void Send() => MoveSyncAction.Send();
 
     public new void SendToHostOrBroadcast() => base.SendToHostOrBroadcast();
     public new void SendToHostOrBroadcastLowPriority() => base.SendToHostOrBroadcastLowPriority();

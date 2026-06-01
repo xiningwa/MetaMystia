@@ -14,7 +14,7 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class ExtractFoodAction : Action
 {
-    public override ActionType Type => ActionType.EXTRACT_FOOD;
+    public override ActionType Type => ActionType.ExtractFood;
     public SellableFood Food { get; set; }
 
     protected override bool OnSendLogOnlyAction => true;

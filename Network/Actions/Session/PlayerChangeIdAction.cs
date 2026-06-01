@@ -11,9 +11,9 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 [ServerRelay]
 [AutoLog]
-public partial class PlayerIdChangeAction : Action
+public partial class PlayerChangeIdAction : Action
 {
-    public override ActionType Type => ActionType.PLAYER_ID_CHANGE;
+    public override ActionType Type => ActionType.PlayerChangeId;
 
     public string NewPlayerId { get; private set; }
 
@@ -41,6 +41,6 @@ public partial class PlayerIdChangeAction : Action
         // 更新本地玩家自己的头顶标签
         PlayerManager.Local.Id = newId;
         FloatingTextHelper.UpdatePlayerLabel(PlayerManager.Local.Uid, newId);
-        new PlayerIdChangeAction { NewPlayerId = newId }.SendToHostOrBroadcast();
+        new PlayerChangeIdAction { NewPlayerId = newId }.SendToHostOrBroadcast();
     }
 }

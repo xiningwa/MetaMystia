@@ -29,7 +29,7 @@ public static partial class NightSceneManagerPatch
         {
             return;
         }
-        SkinChangeAction.Send(PlayerManager.Local.Skin);
+        PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
 
         PrepSceneManager.ClearPrepTable();
 

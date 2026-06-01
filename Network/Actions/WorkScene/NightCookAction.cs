@@ -12,9 +12,9 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 [AutoLog]
 [ServerRelay]
-public partial class CookAction : Action
+public partial class NightCookAction : Action
 {
-    public override ActionType Type => ActionType.COOK;
+    public override ActionType Type => ActionType.NightCook;
     public int GridIndex { get; set; }
     public int RecipeId { get; set; }
     public SellableFood Food { get; set; }
@@ -53,7 +53,7 @@ public partial class CookAction : Action
 
     public static void Send(int gridIndex, SellableFood food, int recipeId)
     {
-        var action = new CookAction
+        var action = new NightCookAction
         {
             GridIndex = gridIndex,
             RecipeId = recipeId,

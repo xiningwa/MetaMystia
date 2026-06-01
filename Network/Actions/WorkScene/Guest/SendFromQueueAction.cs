@@ -6,7 +6,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class SendFromQueueAction : Action
 {
-    public override ActionType Type => ActionType.SendFromQueueAction;
+    public override ActionType Type => ActionType.SendFromQueue;
     public int RuntimeId { get; set; }
 
     [DiscardOnStory]

@@ -38,7 +38,7 @@ public static class SkinCommands
             PlayerManager.Local.IsCustomSkinOverride = true;
             PlayerManager.Local.UpdateCharacterSprite();
             if (MpManager.IsConnected)
-                SkinChangeAction.Send(PlayerManager.Local.Skin);
+                PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
             PlayerManager.RefreshPortrait();
             ctx.Log(TextId.SkinMsgSetOk.Get(characterId, selectedType, skinIndex));
         });
@@ -52,7 +52,7 @@ public static class SkinCommands
             PlayerManager.InitLocalSkin();
             PlayerManager.Local.UpdateCharacterSprite();
             if (MpManager.IsConnected)
-                SkinChangeAction.Send(PlayerManager.Local.Skin);
+                PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
             PlayerManager.RefreshPortrait();
             ctx.Log(TextId.SkinMsgResetOk.Get());
         });
@@ -72,7 +72,7 @@ public static class SkinCommands
                 PlayerManager.InitLocalSkin();
                 PlayerManager.Local.UpdateCharacterSprite();
                 if (MpManager.IsConnected)
-                    SkinChangeAction.Send(PlayerManager.Local.Skin);
+                    PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
                 PlayerManager.RefreshPortrait();
                 ctx.Log(TextId.SkinMsgNetClearOk.Get());
                 return;
@@ -109,7 +109,7 @@ public static class SkinCommands
             // 先应用 Fallback 占位，下载完成后 NetSkinManager 会自动重新刷新
             PlayerManager.Local.UpdateCharacterSprite();
             if (MpManager.IsConnected)
-                SkinChangeAction.Send(PlayerManager.Local.Skin);
+                PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
             PlayerManager.RefreshPortrait();
 
             NetSkinManager.RequestSkin(name, ok =>

@@ -10,9 +10,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [ServerRelay]
-public partial class SelectAction : Action
+public partial class SelectIzakayaAction : Action
 {
-    public override ActionType Type => ActionType.SELECT;
+    public override ActionType Type => ActionType.SelectIzakaya;
     public string MapLabel { get; set; } = "";
     public int MapLevel { get; set; } = 0;
     public override void OnReceivedDerived()
@@ -41,7 +41,7 @@ public partial class SelectAction : Action
 
     public static void Send(string mapLabel, int level)
     {
-        new SelectAction
+        new SelectIzakayaAction
         {
             MapLabel = mapLabel,
             MapLevel = level

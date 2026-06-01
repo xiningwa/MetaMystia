@@ -17,7 +17,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestLeaveAction : Action
 {
-    public override ActionType Type => ActionType.GuestLeaveAction;
+    public override ActionType Type => ActionType.GuestLeave;
 
     public int RuntimeId { get; set; }
     public byte LeaveType { get; set; }

@@ -38,7 +38,7 @@ public partial class CharacterControllerInputGeneratorComponentPatch
             if (__instance.name == characterCollection["Self"].name)
             {
                 PlayerManager.LocalInputDirection = inputDirection;
-                SyncAction.Send();
+                MoveSyncAction.Send();
             }
         }
         catch (System.Exception e)

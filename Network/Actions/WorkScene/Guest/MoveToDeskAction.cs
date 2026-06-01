@@ -6,7 +6,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class MoveToDeskAction : Action
 {
-    public override ActionType Type => ActionType.MoveToDeskAction;
+    public override ActionType Type => ActionType.MoveToDesk;
 
     public int RuntimeId { get; set; }
     public int DeskCode { get; set; }

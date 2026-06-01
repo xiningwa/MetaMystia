@@ -29,7 +29,7 @@ public partial class DaySceneManagerPatch
 
         if (MpManager.IsConnected)
         {
-            SkinChangeAction.Send(PlayerManager.Local.Skin);
+            PlayerChangeSkinAction.Send(PlayerManager.Local.Skin);
         }
 
         if (PatchRegistry.PatchedException != null)
@@ -82,7 +82,7 @@ public partial class DaySceneManagerPatch
         }
 
         InGameConsole.ShowPassive(TextId.MystiaReadyForWork.Get());
-        ReadyAction.Send(ReadyType.DayOver);
+        PhaseReadyAction.Send(ReadyType.DayOver);
         MpManager.DayOver();
         return SkipOriginal;
     }

@@ -10,9 +10,9 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 [AutoLog]
 [ServerRelay]
-public partial class SyncAction : Action
+public partial class MoveSyncAction : Action
 {
-    public override ActionType Type => ActionType.SYNC;
+    public override ActionType Type => ActionType.MoveSync;
     public float Vx { get; set; }
     public float Vy { get; set; }
     public float Px { get; set; }
@@ -56,7 +56,7 @@ public partial class SyncAction : Action
 
         if (MpManager.LocalScene == Common.UI.Scene.WorkScene)
         {
-            var action = new NightSyncAction
+            var action = new NightMoveSyncAction
             {
                 Vx = inputDirection.x,
                 Vy = inputDirection.y,
@@ -72,7 +72,7 @@ public partial class SyncAction : Action
             var isSprinting = PlayerManager.LocalIsSprinting;
             var speed = PlayerManager.Local.Speed;
 
-            var action = new SyncAction
+            var action = new MoveSyncAction
             {
                 IsSprinting = isSprinting,
                 Speed = speed,

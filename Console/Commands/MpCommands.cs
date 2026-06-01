@@ -118,7 +118,7 @@ public static class MpCommands
                 return;
             }
             MpManager.PlayerId = id;
-            PlayerIdChangeAction.Send(id);
+            PlayerChangeIdAction.Send(id);
             ctx.Log(TextId.MpPlayerIdSet.Get(id));
         });
         mpCmd.AddCommand(idCmd);

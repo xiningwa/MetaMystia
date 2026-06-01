@@ -8,100 +8,102 @@ namespace MetaMystia.Network;
 
 public enum ActionType : ushort
 {
-    PING = 0xbeef,
-    PONG,
+    Ping,
+    Pong,
 
-    HELLO,
-    HELLO_ACK,
-    REJECT,
-    PEER_JOIN,
-    PEER_LEAVE,
+    Hello,
+    HelloAck,
+    Reject,
+    PeerJoin,
+    PeerLeave,
+    PlayerChangeId,
+    PlayerChangeSkin,
+    Message,
 
-    SCENE_TRANSIT,
-    SYNC,
-    READY,
-    MESSAGE,
-    SELECT,
-    CONFIRM_SELECT,
-    PREP,
-    NIGHTSYNC,
-    COOK,
-    EXTRACT,
+    SceneTransit,
+    MoveSync,
+    NightMoveSync,
+    
+    PhaseReady,
+    SelectIzakaya,
+    ConfirmIzakaya,
+    UpdatePrep,
+    
+    NightCook,
+    ExtractFromCooker,
+    StoreFood, // 这是往保温箱中存储，仅可以存储 food
+    StoreSellable, // 这是往空位存储，可以存储 sellable（food / beverage）
+    ExtractFood,
     QTE,
-    STORE_FOOD, // 这是往保温箱中存储，仅可以存储 food
-    STORE_SELLABLE, // 这是往空位存储，可以存储 sellable（food / beverage）
-    EXTRACT_FOOD,
-    BUFF,
-    IZAKAYA_CLOSE,
-    GET_COLLECTABLE, // disabled
-    PLAYER_ID_CHANGE,
-    SKIN_CHANGE,
-
-    GuestSpawnAction,
-    MoveToDeskAction,
-    MoveToQueueAction,
-    PlayerRepellAction,
-    GenerateOrderAction,
-    ServeSellableAction,
-    EvaluateOrderAction,
-    ConfirmServeAction,
-    GuestLeaveAction,
-    SendFromQueueAction,
-    PatientDepletedQueueAction,
-    PatientDepletedDeskAction,
-    GuestKillAction,
-    FundEditAction,
-    TipEditAction,
-    ExpEditAction,
-    PassionEditAction,
-    GuestInviteAction,
+    Buff,
+    
+    GuestInvite,
+    GuestSpawn,
+    MoveToDesk,
+    MoveToQueue,
+    PlayerRepell,
+    GenerateOrder,
+    ServeSellable,
+    EvaluateOrder,
+    ConfirmServe,
+    GuestLeave,
+    SendFromQueue,
+    PatientDepletedQueue,
+    PatientDepletedDesk,
+    GuestKill,
+    
+    FundEdit,
+    TipEdit,
+    ExpEdit,
+    PassionEdit,
+    
+    IzakayaClose,
 }
 
 [MemoryPackable]
-[MemoryPackUnion((ushort)ActionType.PING, typeof(PingAction))]
-[MemoryPackUnion((ushort)ActionType.PONG, typeof(PongAction))]
-[MemoryPackUnion((ushort)ActionType.HELLO, typeof(HelloAction))]
-[MemoryPackUnion((ushort)ActionType.HELLO_ACK, typeof(HelloAckAction))]
-[MemoryPackUnion((ushort)ActionType.REJECT, typeof(RejectAction))]
-[MemoryPackUnion((ushort)ActionType.PEER_JOIN, typeof(PeerJoinAction))]
-[MemoryPackUnion((ushort)ActionType.PEER_LEAVE, typeof(PeerLeaveAction))]
-[MemoryPackUnion((ushort)ActionType.SCENE_TRANSIT, typeof(SceneTransitAction))]
-[MemoryPackUnion((ushort)ActionType.SYNC, typeof(SyncAction))]
-[MemoryPackUnion((ushort)ActionType.READY, typeof(ReadyAction))]
-[MemoryPackUnion((ushort)ActionType.MESSAGE, typeof(MessageAction))]
-[MemoryPackUnion((ushort)ActionType.SELECT, typeof(SelectAction))]
-[MemoryPackUnion((ushort)ActionType.CONFIRM_SELECT, typeof(ConfirmSelectAction))]
-[MemoryPackUnion((ushort)ActionType.PREP, typeof(PrepAction))]
-[MemoryPackUnion((ushort)ActionType.NIGHTSYNC, typeof(NightSyncAction))]
-[MemoryPackUnion((ushort)ActionType.COOK, typeof(CookAction))]
-[MemoryPackUnion((ushort)ActionType.EXTRACT, typeof(ExtractAction))]
+[MemoryPackUnion((ushort)ActionType.Ping, typeof(PingAction))]
+[MemoryPackUnion((ushort)ActionType.Pong, typeof(PongAction))]
+[MemoryPackUnion((ushort)ActionType.Hello, typeof(HelloAction))]
+[MemoryPackUnion((ushort)ActionType.HelloAck, typeof(HelloAckAction))]
+[MemoryPackUnion((ushort)ActionType.Reject, typeof(RejectAction))]
+[MemoryPackUnion((ushort)ActionType.PeerJoin, typeof(PeerJoinAction))]
+[MemoryPackUnion((ushort)ActionType.PeerLeave, typeof(PeerLeaveAction))]
+[MemoryPackUnion((ushort)ActionType.PlayerChangeId, typeof(PlayerChangeIdAction))]
+[MemoryPackUnion((ushort)ActionType.PlayerChangeSkin, typeof(PlayerChangeSkinAction))]
+[MemoryPackUnion((ushort)ActionType.Message, typeof(MessageAction))]
+[MemoryPackUnion((ushort)ActionType.SceneTransit, typeof(SceneTransitAction))]
+[MemoryPackUnion((ushort)ActionType.MoveSync, typeof(MoveSyncAction))]
+[MemoryPackUnion((ushort)ActionType.NightMoveSync, typeof(NightMoveSyncAction))]
+[MemoryPackUnion((ushort)ActionType.PhaseReady, typeof(PhaseReadyAction))]
+[MemoryPackUnion((ushort)ActionType.SelectIzakaya, typeof(SelectIzakayaAction))]
+[MemoryPackUnion((ushort)ActionType.ConfirmIzakaya, typeof(ConfirmIzakayaAction))]
+[MemoryPackUnion((ushort)ActionType.UpdatePrep, typeof(UpdatePrepAction))]
+[MemoryPackUnion((ushort)ActionType.NightCook, typeof(NightCookAction))]
+[MemoryPackUnion((ushort)ActionType.ExtractFromCooker, typeof(ExtractFromCookerAction))]
+[MemoryPackUnion((ushort)ActionType.StoreFood, typeof(StoreFoodAction))]
+[MemoryPackUnion((ushort)ActionType.StoreSellable, typeof(StoreSellableAction))]
+[MemoryPackUnion((ushort)ActionType.ExtractFood, typeof(ExtractFoodAction))]
 [MemoryPackUnion((ushort)ActionType.QTE, typeof(QTEAction))]
-[MemoryPackUnion((ushort)ActionType.STORE_FOOD, typeof(StoreFoodAction))]
-[MemoryPackUnion((ushort)ActionType.STORE_SELLABLE, typeof(StoreSellableAction))]
-[MemoryPackUnion((ushort)ActionType.EXTRACT_FOOD, typeof(ExtractFoodAction))]
-[MemoryPackUnion((ushort)ActionType.BUFF, typeof(BuffAction))]
-[MemoryPackUnion((ushort)ActionType.IZAKAYA_CLOSE, typeof(IzakayaCloseAction))]
-[MemoryPackUnion((ushort)ActionType.GET_COLLECTABLE, typeof(GetCollectableAction))]
-[MemoryPackUnion((ushort)ActionType.PLAYER_ID_CHANGE, typeof(PlayerIdChangeAction))]
-[MemoryPackUnion((ushort)ActionType.SKIN_CHANGE, typeof(SkinChangeAction))]
-[MemoryPackUnion((ushort)ActionType.GuestSpawnAction, typeof(GuestSpawnAction))]
-[MemoryPackUnion((ushort)ActionType.MoveToDeskAction, typeof(MoveToDeskAction))]
-[MemoryPackUnion((ushort)ActionType.MoveToQueueAction, typeof(MoveToQueueAction))]
-[MemoryPackUnion((ushort)ActionType.PlayerRepellAction, typeof(PlayerRepellAction))]
-[MemoryPackUnion((ushort)ActionType.GenerateOrderAction, typeof(GenerateOrderAction))]
-[MemoryPackUnion((ushort)ActionType.ServeSellableAction, typeof(ServeSellableAction))]
-[MemoryPackUnion((ushort)ActionType.EvaluateOrderAction, typeof(EvaluateOrderAction))]
-[MemoryPackUnion((ushort)ActionType.ConfirmServeAction, typeof(ConfirmServeAction))]
-[MemoryPackUnion((ushort)ActionType.GuestLeaveAction, typeof(GuestLeaveAction))]
-[MemoryPackUnion((ushort)ActionType.SendFromQueueAction, typeof(SendFromQueueAction))]
-[MemoryPackUnion((ushort)ActionType.PatientDepletedQueueAction, typeof(PatientDepletedQueueAction))]
-[MemoryPackUnion((ushort)ActionType.PatientDepletedDeskAction, typeof(PatientDepletedDeskAction))]
-[MemoryPackUnion((ushort)ActionType.GuestKillAction, typeof(GuestKillAction))]
-[MemoryPackUnion((ushort)ActionType.FundEditAction, typeof(FundEditAction))]
-[MemoryPackUnion((ushort)ActionType.TipEditAction, typeof(TipEditAction))]
-[MemoryPackUnion((ushort)ActionType.ExpEditAction, typeof(ExpEditAction))]
-[MemoryPackUnion((ushort)ActionType.PassionEditAction, typeof(PassionEditAction))]
-[MemoryPackUnion((ushort)ActionType.GuestInviteAction, typeof(GuestInviteAction))]
+[MemoryPackUnion((ushort)ActionType.Buff, typeof(BuffAction))]
+[MemoryPackUnion((ushort)ActionType.GuestInvite, typeof(GuestInviteAction))]
+[MemoryPackUnion((ushort)ActionType.GuestSpawn, typeof(GuestSpawnAction))]
+[MemoryPackUnion((ushort)ActionType.MoveToDesk, typeof(MoveToDeskAction))]
+[MemoryPackUnion((ushort)ActionType.MoveToQueue, typeof(MoveToQueueAction))]
+[MemoryPackUnion((ushort)ActionType.PlayerRepell, typeof(PlayerRepellAction))]
+[MemoryPackUnion((ushort)ActionType.GenerateOrder, typeof(GenerateOrderAction))]
+[MemoryPackUnion((ushort)ActionType.ServeSellable, typeof(ServeSellableAction))]
+[MemoryPackUnion((ushort)ActionType.EvaluateOrder, typeof(EvaluateOrderAction))]
+[MemoryPackUnion((ushort)ActionType.ConfirmServe, typeof(ConfirmServeAction))]
+[MemoryPackUnion((ushort)ActionType.GuestLeave, typeof(GuestLeaveAction))]
+[MemoryPackUnion((ushort)ActionType.SendFromQueue, typeof(SendFromQueueAction))]
+[MemoryPackUnion((ushort)ActionType.PatientDepletedQueue, typeof(PatientDepletedQueueAction))]
+[MemoryPackUnion((ushort)ActionType.PatientDepletedDesk, typeof(PatientDepletedDeskAction))]
+[MemoryPackUnion((ushort)ActionType.GuestKill, typeof(GuestKillAction))]
+[MemoryPackUnion((ushort)ActionType.FundEdit, typeof(FundEditAction))]
+[MemoryPackUnion((ushort)ActionType.TipEdit, typeof(TipEditAction))]
+[MemoryPackUnion((ushort)ActionType.ExpEdit, typeof(ExpEditAction))]
+[MemoryPackUnion((ushort)ActionType.PassionEdit, typeof(PassionEditAction))]
+[MemoryPackUnion((ushort)ActionType.IzakayaClose, typeof(IzakayaCloseAction))]
 [AutoLog]
 
 public abstract partial class Action

@@ -14,7 +14,7 @@ namespace MetaMystia.Network;
 
 public partial class PassionEditAction : Action
 {
-    public override ActionType Type => ActionType.PassionEditAction;
+    public override ActionType Type => ActionType.PassionEdit;
 
     public float Value { get; set; }
     public EventManager.MathOperation MathOp { get; set; }

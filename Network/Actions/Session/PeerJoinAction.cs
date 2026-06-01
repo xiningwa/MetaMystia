@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PeerJoinAction : Action
 {
-    public override ActionType Type => ActionType.PEER_JOIN;
+    public override ActionType Type => ActionType.PeerJoin;
 
     public PlayerInfo PeerInfo;
 

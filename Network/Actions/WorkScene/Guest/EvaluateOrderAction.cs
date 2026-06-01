@@ -9,7 +9,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class EvaluateOrderAction : Action
 {
-    public override ActionType Type => ActionType.EvaluateOrderAction;
+    public override ActionType Type => ActionType.EvaluateOrder;
 
     public int RuntimeId { get; set; }
     public int OrderSeq { get; set; }

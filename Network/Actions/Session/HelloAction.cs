@@ -13,7 +13,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class HelloAction : Action
 {
-    public override ActionType Type => ActionType.HELLO;
+    public override ActionType Type => ActionType.Hello;
     public string Version { get; set; } = "";
     public string GameVersion { get; set; } = "";
     public Scene CurrentGameScene { get; set; }

@@ -12,7 +12,7 @@ namespace MetaMystia;
 [AutoLog]
 public static partial class PrepSceneManager
 {
-    public static PrepAction.Table localPrepTable = new();
+    public static UpdatePrepAction.Table localPrepTable = new();
 
     public static readonly int MaxRecipes = 8;
     public static readonly int MaxBeverages = 8;
@@ -32,9 +32,9 @@ public static partial class PrepSceneManager
         GameData.RunTime.Common.StatusTracker.Instance.partners.Clear();
     }
 
-    public static void ClearPrepTable() => localPrepTable = new PrepAction.Table();
+    public static void ClearPrepTable() => localPrepTable = new UpdatePrepAction.Table();
 
-    public static void MergeFromPeer(PrepAction.Table remotePrepTable)
+    public static void MergeFromPeer(UpdatePrepAction.Table remotePrepTable)
     {
         bool changed = false;
 
@@ -108,7 +108,7 @@ public static partial class PrepSceneManager
         return changed;
     }
 
-    private static bool MergeCookers(PrepAction.Table remotePrepTable)
+    private static bool MergeCookers(UpdatePrepAction.Table remotePrepTable)
     {
         if (remotePrepTable == null)
         {

@@ -13,7 +13,7 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class MessageAction : Action
 {
-    public override ActionType Type => ActionType.MESSAGE;
+    public override ActionType Type => ActionType.Message;
 
     [MemoryPackIgnore]
     private const int maxMessageLen = 1024;

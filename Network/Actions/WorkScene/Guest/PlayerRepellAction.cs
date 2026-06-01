@@ -7,7 +7,7 @@ namespace MetaMystia.Network;
 [ServerRelay]
 public partial class PlayerRepellAction : Action
 {
-    public override ActionType Type => ActionType.PlayerRepellAction;
+    public override ActionType Type => ActionType.PlayerRepell;
 
     public int RuntimeId { get; set; }
 

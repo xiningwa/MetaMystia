@@ -11,7 +11,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GenerateOrderAction : Action
 {
-    public override ActionType Type => ActionType.GenerateOrderAction;
+    public override ActionType Type => ActionType.GenerateOrder;
 
     public int RuntimeId { get; set; }
     public GuestsManager.OrderGenerationResult Result { get; set; }

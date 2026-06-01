@@ -12,9 +12,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-public partial class ConfirmSelectAction : Action
+public partial class ConfirmIzakayaAction : Action
 {
-    public override ActionType Type => ActionType.CONFIRM_SELECT;
+    public override ActionType Type => ActionType.ConfirmIzakaya;
     public string MapLabel { get; set; } = "";
     public int MapLevel { get; set; } = 0;
 
@@ -34,7 +34,7 @@ public partial class ConfirmSelectAction : Action
     /// </summary>
     public static void Broadcast(string mapLabel, int mapLevel)
     {
-        var action = new ConfirmSelectAction
+        var action = new ConfirmIzakayaAction
         {
             MapLabel = mapLabel,
             MapLevel = mapLevel

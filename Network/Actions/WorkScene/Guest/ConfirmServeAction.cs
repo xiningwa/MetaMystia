@@ -8,7 +8,7 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ConfirmServeAction : Action
 {
-    public override ActionType Type => ActionType.ConfirmServeAction;
+    public override ActionType Type => ActionType.ConfirmServe;
 
     public int RuntimeId { get; set; }
     public int OrderSeq { get; set; }
