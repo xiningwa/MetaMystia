@@ -8,7 +8,7 @@ namespace MetaMystia.Network;
 
 public enum ActionType : ushort
 {
-    PING,
+    PING = 0xbeef,
     PONG,
 
     HELLO,
@@ -106,6 +106,7 @@ public enum ActionType : ushort
 
 public abstract partial class Action
 {
+    [MemoryPackIgnore]
     public abstract ActionType Type { get; }
     public long TimestampMs { get; protected set; }
     /// <summary>

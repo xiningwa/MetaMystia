@@ -96,13 +96,13 @@ public class PacketBuffer
 
 // ---- 用于 zero-copy relay 的常量 ----
 // 在单 Action NetPacket 中，SenderUid 的字节偏移:
-// ObjectHeader(1) + ArrayLen(4) + UnionTag(1) + ObjectHeader(1) + Type(2) + TimestampMs(8) = 17
+// ObjectHeader(1) + ArrayLen(4) + UnionTag(1) + ObjectHeader(1) + TimestampMs(8) = 15
 internal static class RelayConstants
 {
     /// <summary>
     /// SenderUid(int32 LE) 在单 Action NetPacket body 中的起始偏移
     /// </summary>
-    public const int SenderUidOffset = 17;
+    public const int SenderUidOffset = 15;
 }
 
 // ---------------- TCP Server (Star Topology: Host) ----------------

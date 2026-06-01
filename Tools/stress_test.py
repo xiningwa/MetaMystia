@@ -189,24 +189,20 @@ def build_hello_action(peer_id: str, mod_version: str, game_version: str,
                        current_scene: int = Scene.DayScene) -> bytes:
     """
     HelloAction (ActionType.HELLO = 2) 字段：
-    MemoryPack 序列化 (含 abstract Type property):
-      1. Type              (ushort)  ← MemoryPack 自动序列化 override property
-      2. TimestampMs       (long)
-      3. SenderUid         (int)
-      4. PeerId            (string)
-      5. Version           (string)
-      6. GameVersion       (string)
-      7. CurrentGameScene  (enum Scene -> int32)
-      8. PeerDataBase      (ResourceDataBase)
-      9. PeerSkin          (PlayerSkin)
+    MemoryPack 序列化（Type 由 UnionTag 承担，不在对象内重复）:
+      1. TimestampMs       (long)
+      2. SenderUid         (int)
+      3. PeerId            (string)
+      4. Version           (string)
+      5. GameVersion       (string)
+      6. CurrentGameScene  (enum Scene -> int32)
+      7. PeerDataBase      (ResourceDataBase)
+      8. PeerSkin          (PlayerSkin)
 
-    总字段数 = 9
+    总字段数 = 8
     """
     body = (
-        mp_object_header(9) +
-
-        # Type property (ushort ActionType)
-        mp_uint16(ActionType.HELLO) +
+        mp_object_header(8) +
 
         # base fields
         mp_int64(timestamp_now_ms()) +
@@ -228,16 +224,14 @@ def build_hello_action(peer_id: str, mod_version: str, game_version: str,
 def build_scene_transit_action(scene: int, sender_uid: int = 0) -> bytes:
     """
     SceneTransitAction (ActionType.SCENE_TRANSIT = 7) 字段：
-      1. Type         (ushort)
-      2. TimestampMs  (long)
-      3. SenderUid    (int)
-      4. Scene        (enum -> int32)
+      1. TimestampMs  (long)
+      2. SenderUid    (int)
+      3. Scene        (enum -> int32)
 
-    总字段数 = 4
+    总字段数 = 3
     """
     body = (
-        mp_object_header(4) +
-        mp_uint16(ActionType.SCENE_TRANSIT) +
+        mp_object_header(3) +
         mp_int64(timestamp_now_ms()) +
         mp_int32(sender_uid) +
         mp_int32(scene)
@@ -251,22 +245,20 @@ def build_sync_action(px: float, py: float, vx: float = 0.0, vy: float = 0.0,
                       sender_uid: int = 0) -> bytes:
     """
     SyncAction (ActionType.SYNC = 8) 字段：
-      1. Type         (ushort)
-      2. TimestampMs  (long)
-      3. SenderUid    (int)
-      4. Vx           (float)
-      5. Vy           (float)
-      6. Px           (float)
-      7. Py           (float)
-      8. IsSprinting  (bool)
-      9. Speed        (float)
-     10. MapLabel     (string)
+      1. TimestampMs  (long)
+      2. SenderUid    (int)
+      3. Vx           (float)
+      4. Vy           (float)
+      5. Px           (float)
+      6. Py           (float)
+      7. IsSprinting  (bool)
+      8. Speed        (float)
+      9. MapLabel     (string)
 
-    总字段数 = 10
+    总字段数 = 9
     """
     body = (
-        mp_object_header(10) +
-        mp_uint16(ActionType.SYNC) +
+        mp_object_header(9) +
         mp_int64(timestamp_now_ms()) +
         mp_int32(sender_uid) +
         mp_float(vx) +
@@ -406,8 +398,8 @@ class FakeClient:
                 if action_type == ActionType.HELLO_ACK:
                     # 解析 AssignedUid: 跳过 NetPacket 头部和 HelloAckAction 字段
                     # ObjectHeader(1) + ArrayLen(4) + UnionTag(1) + ObjectHeader(1)
-                    #   + Type(2) + TimestampMs(8) + SenderUid(4) + AssignedUid(4)
-                    offset = 5 + 1 + 1 + 2 + 8 + 4
+                    #   + TimestampMs(8) + SenderUid(4) + AssignedUid(4)
+                    offset = 5 + 1 + 1 + 8 + 4
                     self.assigned_uid = struct.unpack_from("<i", body, offset)[0]
                     log.success(f"[Client {self.client_index}] Got HELLO_ACK, UID={self.assigned_uid}")
                     return True
