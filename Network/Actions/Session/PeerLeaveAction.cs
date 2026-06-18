@@ -11,26 +11,25 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PeerLeaveAction : Action
 {
-    public override ActionType Type => ActionType.PEER_LEAVE;
     public int PeerUid { get; set; }
 
     protected override BepInEx.Logging.LogLevel OnReceiveLogLevel => BepInEx.Logging.LogLevel.Message;
 
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsHost) return;
+        if (MpManager.IsRoomHost) return;
 
         if (PlayerManager.Peers.TryGetValue(PeerUid, out var peer))
         {
-            InGameConsole.ShowPassiveFromAnyThread(TextId.PeerLeft.Get(peer.Id));
+            InGameConsole.ShowPassiveFromAnyThread(TextId.PeerLeft.Get(LiveModeManager.GetDisplayName(PeerUid)));
             PlayerManager.RemovePeer(PeerUid);
         }
     }
 
     public static void BroadcastPeerLeave(int leavingUid)
     {
-        if (!MpManager.IsHost) return;
+        if (!MpManager.IsRoomHost) return;
         var action = new PeerLeaveAction { PeerUid = leavingUid };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

@@ -9,10 +9,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
-public partial class ExtractAction : Action
+[RoomRelay]
+public partial class ExtractFromCookerAction : Action
 {
-    public override ActionType Type => ActionType.EXTRACT;
     public int GridIndex { get; set; }
 
     [DiscardOnStory]
@@ -33,10 +32,10 @@ public partial class ExtractAction : Action
 
     public static void Send(int gridIndex)
     {
-        var action = new ExtractAction
+        var action = new ExtractFromCookerAction
         {
             GridIndex = gridIndex
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

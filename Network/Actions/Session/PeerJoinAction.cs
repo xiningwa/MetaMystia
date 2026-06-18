@@ -11,7 +11,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PeerJoinAction : Action
 {
-    public override ActionType Type => ActionType.PEER_JOIN;
 
     public PlayerInfo PeerInfo;
 
@@ -19,7 +18,7 @@ public partial class PeerJoinAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsHost) return;
+        if (MpManager.IsRoomHost) return;
 
         if (PeerInfo.Uid == PlayerManager.Local.Uid) return;
 
@@ -39,7 +38,7 @@ public partial class PeerJoinAction : Action
             peer.IsDayOver = PeerInfo.IsDayOver;
             peer.IsPrepOver = PeerInfo.IsPrepOver;
         }
-        InGameConsole.ShowPassiveFromAnyThread(TextId.PeerJoined.Get(PeerInfo.PeerId));
+        InGameConsole.ShowPassiveFromAnyThread(TextId.PeerJoined.Get(LiveModeManager.GetDisplayName(PeerInfo.Uid)));
     }
 
     /// <summary>
@@ -47,14 +46,9 @@ public partial class PeerJoinAction : Action
     /// </summary>
     public static void BroadcastExcept(int newPeerUid, PlayerInfo peerInfo)
     {
-        if (!MpManager.IsHost) return;
+        if (!MpManager.IsRoomHost) return;
         if (PlayerManager.Peers.Count <= 1) return;
 
-        var action = new PeerJoinAction
-        {
-            PeerInfo = peerInfo
-        };
-        var packet = NetPacket.FromSingleAction(action);
-        MpManager.SendToAllExcept(newPeerUid, packet);
+        new PeerJoinAction { PeerInfo = peerInfo, WireExceptUid = newPeerUid }.Send();
     }
 }

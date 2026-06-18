@@ -5,7 +5,6 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 public partial class PongAction : Action
 {
-    public override ActionType Type => ActionType.PONG;
     public int Id { get; set; }
 
     protected override BepInEx.Logging.LogLevel OnReceiveLogLevel => BepInEx.Logging.LogLevel.Debug;
@@ -13,7 +12,7 @@ public partial class PongAction : Action
 
     public override void OnReceivedDerived()
     {
-        MpManager.UpdateLatency(Id);
+        MpWire.UpdateLatency(Id);
     }
 
     /// <summary>
@@ -21,6 +20,6 @@ public partial class PongAction : Action
     /// </summary>
     public static void SendPong(int id)
     {
-        new PongAction { Id = id }.SendToHostOrBroadcast();
+        new PongAction { Id = id }.Send();
     }
 }

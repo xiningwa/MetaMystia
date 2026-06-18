@@ -643,7 +643,7 @@ public partial class GuestFSM
     /// <returns></returns>
     public static bool DoServe(int runtimeId, int orderSeq, Sellable requested, Sellable baseOn, Sellable.SellableType type, int senderUid)
     {
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsRoomHost)
         {
             return DoServeHost(runtimeId, orderSeq, requested, baseOn, type, senderUid);
         }
@@ -948,7 +948,7 @@ public partial class GuestFSM
         if (fsm.CurrentState != State.WaitingServe) return false;
         if (OrderSeqMismatch(fsm, orderSeq, nameof(DoConfirmServe))) return true;
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsRoomHost)
         {
             // 主机已上该 料理/酒水 => 丢弃
             if ((fsm.CurrentOrder?.ServFood != null && food != null)
@@ -1013,7 +1013,7 @@ public partial class GuestFSM
         if (order.IsFullfilled)
         {
             TryCloseServePanel(fsm.DeskCode);
-            if (MpManager.IsConnectedHost && fsm.CurrentState == State.WaitingServe)
+            if (MpManager.IsRoomHost && fsm.CurrentState == State.WaitingServe)
             {
                 GuestsManager.Instance.EvaluateOrder(controller, false, null);
             }
@@ -1194,7 +1194,7 @@ public partial class GuestFSM
         UI.InGameConsole.ShowPassive($"#{RuntimeId}: 状态异常 {stateBefore} -> {state}");
         Log.LogStacktrace();
 
-        if (MpManager.IsConnectedHost)
+        if (MpManager.IsRoomHost)
         {
             GuestKillAction.Send(rid, stateBefore, Controller?.DeskCode ?? -1);
         }

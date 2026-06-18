@@ -65,6 +65,10 @@ public static partial class PatchRegistry
         typeof(RunTimeDayScenePatch),
         typeof(DaySceneChatSelectionPannel__c__DisplayClass17_0Patch),
 
+        typeof(CollabBehaviourComponentPatch),
+        typeof(DaySceneUIManagerPatch),
+        typeof(TrackedMissionDataPatch),
+
         // Shinki (神绮) / Koakuma (小恶魔) Spell Patches
         typeof(ShinkiGuestIconManagerPatch),
         typeof(ShinkiDebugConsolePatch),
@@ -74,6 +78,7 @@ public static partial class PatchRegistry
         typeof(BuffElementDescriptionPatch),
         typeof(BuffInitialDescriptionPatch),
         typeof(SpellDeclareCutinCharacterPatch),
+
     ];
 
     public static bool AllPatched => PatchedException == null;

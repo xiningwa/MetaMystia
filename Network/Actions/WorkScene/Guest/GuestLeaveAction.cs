@@ -17,7 +17,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestLeaveAction : Action
 {
-    public override ActionType Type => ActionType.GuestLeaveAction;
 
     public int RuntimeId { get; set; }
     public byte LeaveType { get; set; }
@@ -27,7 +26,7 @@ public partial class GuestLeaveAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         var leaveType = (GuestGroupController.LeaveType)LeaveType;
@@ -49,6 +48,6 @@ public partial class GuestLeaveAction : Action
             LeaveType = (byte)leaveType,
             TriggerLeaveBuff = triggerLeaveBuff
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

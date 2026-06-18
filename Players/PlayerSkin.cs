@@ -28,6 +28,11 @@ public partial class PlayerSkin
     public string NetSkinName = null;
 
     /// <summary>
+    /// 旋转覆盖。null = 使用皮肤默认值；true = 强制开启旋转；false = 强制关闭旋转。
+    /// </summary>
+    public bool? RotateOverride = null;
+
+    /// <summary>
     /// 解析 CharacterSpriteSetCompact
     /// </summary>
     public CharacterSpriteSetCompact ResolveSkin()
@@ -76,8 +81,6 @@ public partial class PlayerSkin
     /// </summary>
     public CharacterPortrayal ResolveSpecialPortrait()
     {
-        CharacterProtrayalSet set;
-
         if (DataBaseCharacter.SpecialGuestVisual.ContainsKey(CharacterId))
         {
             return DataBaseCharacter.SpecialGuestVisual[CharacterId]?.CharacterPortrayal?.defaultPortrayal;
@@ -187,11 +190,31 @@ public partial class PlayerSkin
     }
 
     /// <summary>
+    /// 设置旋转覆盖
+    /// </summary>
+    public void SetRotate(bool? value)
+    {
+        RotateOverride = value;
+    }
+
+    /// <summary>
     /// 将当前皮肤应用到指定 unit 上
     /// </summary>
     /// <param name="unit"></param>
     public void ApplyToUnit(CharacterControllerUnit unit)
-        => unit?.UpdateCharacterSprite(ResolveSkin());
+    {
+        if (unit == null) return;
+        var skin = ResolveSkin();
+        if (skin != null && RotateOverride.HasValue)
+        {
+            skin.isHina = RotateOverride.Value;
+            skin.rotatePerTime = 0.15f;
+            if (!RotateOverride.Value)
+                unit.animator?.StopAllCoroutines();
+            unit.m_CurrentVisual = null;
+        }
+        unit.UpdateCharacterSprite(skin);
+    }
 
 
     /// <summary>

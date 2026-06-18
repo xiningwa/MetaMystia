@@ -14,8 +14,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ShinkiBlackCardAction : Action
 {
-    public override ActionType Type => ActionType.ShinkiBlackCardAction;
-
     public int[] AffectedRuntimeIds { get; set; } = [];
     public int ShinkiRuntimeId { get; set; } = -1;
     public float PortalX { get; set; }
@@ -26,7 +24,7 @@ public partial class ShinkiBlackCardAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsConnectedServer) return;
 
         var ids = AffectedRuntimeIds;
         var shinkiRid = ShinkiRuntimeId;
@@ -48,6 +46,6 @@ public partial class ShinkiBlackCardAction : Action
             PortalY = portalPos.y,
             PortalZ = portalPos.z,
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

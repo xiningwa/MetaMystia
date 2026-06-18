@@ -12,17 +12,16 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[Action.HostRelay]
-public partial class SkinChangeAction : Action
+[Action.PublicRelay]
+public partial class PlayerChangeSkinAction : Action
 {
-    public override ActionType Type => ActionType.SKIN_CHANGE;
     public PlayerSkin Skin { get; set; }
 
     public override void OnReceivedDerived()
     {
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            if (!PlayerManager.Peers.TryGetValue(SenderUid, out var peer))
+            if (!PlayerManager.TryGetVisiblePeer(SenderUid, out var peer))
             {
                 return;
             }
@@ -37,10 +36,10 @@ public partial class SkinChangeAction : Action
 
     public static void Send(PlayerSkin skin)
     {
-        var action = new SkinChangeAction
+        var action = new PlayerChangeSkinAction
         {
             Skin = skin
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

@@ -8,7 +8,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ConfirmServeAction : Action
 {
-    public override ActionType Type => ActionType.ConfirmServeAction;
 
     public int RuntimeId { get; set; }
     public int OrderSeq { get; set; }
@@ -49,6 +48,6 @@ public partial class ConfirmServeAction : Action
             Beverage = SellableFood.FromSellable(beverage),
             SenderUid = senderUid == -1 ? PlayerManager.Local.Uid : senderUid
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

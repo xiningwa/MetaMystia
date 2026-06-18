@@ -13,7 +13,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class HelloAction : Action
 {
-    public override ActionType Type => ActionType.HELLO;
     public string Version { get; set; } = "";
     public string GameVersion { get; set; } = "";
     public Scene CurrentGameScene { get; set; }
@@ -28,7 +27,7 @@ public partial class HelloAction : Action
     /// </summary>
     public override void OnReceivedDerived()
     {
-        if (!MpManager.IsHost)
+        if (!MpManager.IsRoomHost)
         {
             Log.LogWarning("Hello received by non-host, ignoring");
             return;
@@ -49,12 +48,20 @@ public partial class HelloAction : Action
             return;
         }
 
+        if (PeerInfo?.IncrementalDataBase is not { IsIncrementalReady: true })
+        {
+            Log.LogWarning($"Rejecting connection from '{PeerInfo?.PeerId}' (uid={SenderUid}): game resources not loaded");
+            RejectAction.SendAndDisconnect(SenderUid, TextId.GameResourcesNotLoaded);
+            return;
+        }
+
         // --- 备菜/营业阶段不允许重连 ---
         if (MpManager.LocalScene == Scene.IzakayaPrepScene || MpManager.LocalScene == Scene.WorkScene)
         {
             Log.LogWarning($"Rejecting connection from '{PeerInfo.PeerId}' (uid={SenderUid}): " +
                 $"reconnection not allowed in {MpManager.LocalScene}");
-            InGameConsole.ShowPassiveFromAnyThread(TextId.PrepWorkReconnectBlocked.Get(PeerInfo.PeerId));
+            InGameConsole.ShowPassiveFromAnyThread(TextId.PrepWorkReconnectBlocked.Get(
+                LiveModeManager.GetDisplayName(SenderUid, PeerInfo.PeerId)));
             RejectAction.SendAndDisconnect(SenderUid, TextId.PrepWorkReconnectBlocked, PeerInfo.PeerId);
             return;
         }
@@ -67,7 +74,7 @@ public partial class HelloAction : Action
             RejectAction.SendAndDisconnect(SenderUid,
                 TextId.RoomFull, MpManager.AllPlayersCount.ToString(), ConfigManager.MaxPlayers.Value.ToString());
             InGameConsole.ShowPassiveFromAnyThread(TextId.RoomFullHostNotify.Get(
-                PeerInfo.PeerId, MpManager.AllPlayersCount, ConfigManager.MaxPlayers.Value));
+                LiveModeManager.GetDisplayName(SenderUid, PeerInfo.PeerId), MpManager.AllPlayersCount, ConfigManager.MaxPlayers.Value));
             return;
         }
 
@@ -85,7 +92,8 @@ public partial class HelloAction : Action
             Log.LogWarning($"Rejecting connection from '{PeerInfo.PeerId}' (uid={SenderUid}): " +
                 $"duplicate PeerId already online");
             RejectAction.SendAndDisconnect(SenderUid, TextId.DuplicatePeerId, PeerInfo.PeerId);
-            InGameConsole.ShowPassiveFromAnyThread(TextId.DuplicatePeerIdHostNotify.Get(PeerInfo.PeerId));
+            InGameConsole.ShowPassiveFromAnyThread(TextId.DuplicatePeerIdHostNotify.Get(
+                LiveModeManager.GetDisplayName(SenderUid, PeerInfo.PeerId)));
             return;
         }
 
@@ -106,15 +114,15 @@ public partial class HelloAction : Action
         PeerJoinAction.BroadcastExcept(PeerInfo.Uid, PeerInfo);
 
         // 启动同步
-        MpManager.OnPeerHandshakeComplete(PeerInfo.Uid);
+        MpWire.OnPeerHandshakeComplete(PeerInfo.Uid);
 
-        InGameConsole.ShowPassiveFromAnyThread(TextId.MpConnected.Get(PeerInfo.PeerId));
+        InGameConsole.ShowPassiveFromAnyThread(TextId.MpConnected.Get(LiveModeManager.GetDisplayName(PeerInfo.Uid)));
     }
 
     /// <summary>
     /// 客机发送 Hello 给主机请求连接
     /// </summary>
-    public static void Send()
+    public static void SendHello()
     {
         PlayerInfo peerInfo = new PlayerInfo()
         {
@@ -131,6 +139,6 @@ public partial class HelloAction : Action
             Version = Plugin.ModVersion,
             CurrentGameScene = MpManager.LocalScene,
             GameVersion = Plugin.GameVersion,
-        }.SendToHostOrBroadcast();
+        }.Send();
     }
 }

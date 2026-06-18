@@ -4,10 +4,9 @@ namespace MetaMystia.Network;
 
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[RoomRelay]
 public partial class PlayerRepellAction : Action
 {
-    public override ActionType Type => ActionType.PlayerRepellAction;
 
     public int RuntimeId { get; set; }
 
@@ -31,6 +30,6 @@ public partial class PlayerRepellAction : Action
         {
             RuntimeId = runtimeId
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

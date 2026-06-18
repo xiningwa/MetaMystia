@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 
 public partial class TipEditAction : Action
 {
-    public override ActionType Type => ActionType.TipEditAction;
 
     public int IntValue { get; set; }
     public EventManager.ServeType ServeType { get; set; }
@@ -26,7 +25,7 @@ public partial class TipEditAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         PluginManager.Instance.RunOnMainThread(() =>
         {
@@ -45,6 +44,6 @@ public partial class TipEditAction : Action
             ComboBuff = comboBuff,
             MoodBuff = moodBuff,
             ExtraBuff = extraBuff
-        }.SendToHostOrBroadcast();
+        }.Send();
     }
 }

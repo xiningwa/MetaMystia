@@ -15,13 +15,12 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestInviteAction : Action
 {
-    public override ActionType Type => ActionType.GuestInviteAction;
 
     public List<int> InvitedGuestIds { get; set; } = [];
 
     public override void OnReceivedDerived()
     {
-        if (!MpManager.IsConnectedHost) return;
+        if (!MpManager.IsRoomHost) return;
 
         var invitedGuestIds = InvitedGuestIds ?? [];
         PluginManager.Instance.RunOnMainThread(() =>
@@ -38,11 +37,11 @@ public partial class GuestInviteAction : Action
 
     public static void Send(List<int> invitedGuestIds)
     {
-        if (!MpManager.IsConnectedClient) return;
+        if (!MpManager.IsRoomClient) return;
 
         new GuestInviteAction
         {
             InvitedGuestIds = invitedGuestIds ?? []
-        }.SendToHostOrBroadcast();
+        }.Send();
     }
 }

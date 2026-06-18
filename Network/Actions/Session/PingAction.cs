@@ -5,7 +5,6 @@ namespace MetaMystia.Network;
 [MemoryPackable]
 public partial class PingAction : Action
 {
-    public override ActionType Type => ActionType.PING;
     public int Id { get; set; }
     protected override BepInEx.Logging.LogLevel OnReceiveLogLevel => BepInEx.Logging.LogLevel.Debug;
     protected override BepInEx.Logging.LogLevel OnSendLogLevel => BepInEx.Logging.LogLevel.Debug;
@@ -20,6 +19,6 @@ public partial class PingAction : Action
     /// </summary>
     public static void SendPing(int id)
     {
-        new PingAction { Id = id }.SendToHostOrBroadcast();
+        new PingAction { Id = id }.Send();
     }
 }

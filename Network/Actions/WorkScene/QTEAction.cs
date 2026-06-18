@@ -10,10 +10,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[RoomRelay]
 public partial class QTEAction : Action
 {
-    public override ActionType Type => ActionType.QTE;
     public int GridIndex { get; set; }
     public float QTEScore { get; set; }
 
@@ -40,6 +39,6 @@ public partial class QTEAction : Action
             GridIndex = gridIndex,
             QTEScore = qteScore
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

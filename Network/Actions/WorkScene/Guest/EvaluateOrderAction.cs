@@ -9,7 +9,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class EvaluateOrderAction : Action
 {
-    public override ActionType Type => ActionType.EvaluateOrderAction;
 
     public int RuntimeId { get; set; }
     public int OrderSeq { get; set; }
@@ -21,7 +20,7 @@ public partial class EvaluateOrderAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         var seq = OrderSeq;
@@ -46,6 +45,6 @@ public partial class EvaluateOrderAction : Action
             Beverage = SellableFood.FromSellable(beverage),
             EvalResult = result
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

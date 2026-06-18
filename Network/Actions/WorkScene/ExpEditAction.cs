@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 
 public partial class ExpEditAction : Action
 {
-    public override ActionType Type => ActionType.ExpEditAction;
 
     public float Value { get; set; }
     public EventManager.MathOperation MathOp { get; set; }
@@ -23,7 +22,7 @@ public partial class ExpEditAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         PluginManager.Instance.RunOnMainThread(() =>
         {
@@ -39,6 +38,6 @@ public partial class ExpEditAction : Action
         {
             Value = value,
             MathOp = mathOp
-        }.SendToHostOrBroadcast();
+        }.Send();
     }
 }

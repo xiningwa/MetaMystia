@@ -14,17 +14,30 @@ public static class CallCommands
 
         // /call getmapsnpcs [mapLabel]
         var getNpcsCmd = new Command("getmapsnpcs", "List NPCs on a map");
-        var mapLabelArg = new Argument<string>("mapLabel") { Arity = System.CommandLine.ArgumentArity.ZeroOrOne };
-        mapLabelArg.SetDefaultValue("");
-        getNpcsCmd.AddArgument(mapLabelArg);
+        var mapKeyArg = new Argument<string>("mapKey") { Arity = System.CommandLine.ArgumentArity.ZeroOrOne };
+        mapKeyArg.SetDefaultValue("");
+        getNpcsCmd.AddArgument(mapKeyArg);
         getNpcsCmd.SetHandler(ctx =>
         {
             try
             {
-                string mapLabel = ctx.ParseResult.GetValueForArgument(mapLabelArg);
-                if (string.IsNullOrEmpty(mapLabel))
-                    mapLabel = PlayerManager.LocalMapLabel;
-                var npcs = GameData.RunTime.DaySceneUtility.RunTimeDayScene.GetMapNPCs(mapLabel);
+                string mapKeyInput = ctx.ParseResult.GetValueForArgument(mapKeyArg);
+                string mapKey;
+                if (string.IsNullOrEmpty(mapKeyInput))
+                {
+                    mapKey = PlayerManager.LocalMapLabel.ToMapKey();
+                }
+                else if (!MapLabelExtensions.TryFromMapKey(mapKeyInput, out _))
+                {
+                    ctx.Log(TextId.InvalidMapKey.Get(mapKeyInput));
+                    return;
+                }
+                else
+                {
+                    mapKey = mapKeyInput;
+                }
+
+                var npcs = GameData.RunTime.DaySceneUtility.RunTimeDayScene.GetMapNPCs(mapKey);
                 foreach (var npc in npcs)
                     ctx.Log(TextId.NPCListItem.Get(npc.Key));
                 ctx.Log(TextId.TotalNPCsFound.Get(npcs.Count));
@@ -39,7 +52,7 @@ public static class CallCommands
         // /call movecharacter <characterKey> <mapLabel> <x> <y> <rot>
         var moveCharCmd = new Command("movecharacter", "Move a character on the map");
         var charKeyArg = new Argument<string>("characterKey", "Character key");
-        var moveMapArg = new Argument<string>("mapLabel", "Target map label");
+        var moveMapArg = new Argument<string>("mapKey", "Target map key");
         var moveXArg = new Argument<float>("x", "X coordinate");
         var moveYArg = new Argument<float>("y", "Y coordinate");
         var moveRotArg = new Argument<int>("rot", "Rotation");
@@ -53,13 +66,20 @@ public static class CallCommands
             try
             {
                 string characterKey = ctx.ParseResult.GetValueForArgument(charKeyArg);
-                string mapLabel = ctx.ParseResult.GetValueForArgument(moveMapArg);
+                string mapKeyInput = ctx.ParseResult.GetValueForArgument(moveMapArg);
+                if (!MapLabelExtensions.TryFromMapKey(mapKeyInput, out var mapLabel))
+                {
+                    ctx.Log(TextId.InvalidMapKey.Get(mapKeyInput));
+                    return;
+                }
+
                 float x = ctx.ParseResult.GetValueForArgument(moveXArg);
                 float y = ctx.ParseResult.GetValueForArgument(moveYArg);
                 int rot = ctx.ParseResult.GetValueForArgument(moveRotArg);
+                var mapKey = mapLabel.ToMapKey();
                 GameData.RunTime.DaySceneUtility.RunTimeDayScene.MoveCharacter(
-                    characterKey, mapLabel, new Vector2(x, y), rot, out _);
-                ctx.Log(TextId.CharacterMoved.Get(characterKey, x, y, rot, mapLabel));
+                    characterKey, mapKey, new Vector2(x, y), rot, out _);
+                ctx.Log(TextId.CharacterMoved.Get(characterKey, x, y, rot, mapLabel.GetDisplayName()));
             }
             catch (System.Exception e)
             {
@@ -99,7 +119,7 @@ public static class CallCommands
         callCmd.SetHandler(ctx =>
         {
             ctx.Log(ConsoleFormat.Header(TextId.CallHelpHeader.Get()));
-            ctx.Log(ConsoleFormat.SubCmd("/call getmapsnpcs", "[mapLabel]", TextId.CallDescGetmapsnpcs.Get()));
+            ctx.Log(ConsoleFormat.SubCmd("/call getmapsnpcs", "[mapKey]", TextId.CallDescGetmapsnpcs.Get()));
             ctx.Log(ConsoleFormat.SubCmd("/call movecharacter", "<key> <map> <x> <y> <rot>", TextId.CallDescMovecharacter.Get()));
             ctx.Log(ConsoleFormat.SubCmd("/call scene_move", "<key> <x> <y>", TextId.CallDescSceneMove.Get()));
             ctx.Log(ConsoleFormat.Line);
@@ -108,9 +128,9 @@ public static class CallCommands
         root.AddCommand(callCmd);
 
         CommandRegistry.RegisterCompletions("call", 0, "getmapsnpcs", "movecharacter", "scene_move");
-        CommandRegistry.RegisterHint("call getmapsnpcs", 0, "[mapLabel]");
+        CommandRegistry.RegisterHint("call getmapsnpcs", 0, "[mapKey]");
         CommandRegistry.RegisterHint("call movecharacter", 0, "<characterKey>");
-        CommandRegistry.RegisterHint("call movecharacter", 1, "<mapLabel>");
+        CommandRegistry.RegisterHint("call movecharacter", 1, "<mapKey>");
         CommandRegistry.RegisterHint("call movecharacter", 2, "<x>");
         CommandRegistry.RegisterHint("call movecharacter", 3, "<y>");
         CommandRegistry.RegisterHint("call movecharacter", 4, "<rot>");

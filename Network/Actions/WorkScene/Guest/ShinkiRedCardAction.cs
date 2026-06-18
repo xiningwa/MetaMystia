@@ -14,8 +14,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ShinkiRedCardAction : Action
 {
-    public override ActionType Type => ActionType.ShinkiRedCardAction;
-
     /// <summary>
     /// 传送门是否已经开启过（true = 跳过开门动画，直接召唤）
     /// </summary>
@@ -25,7 +23,7 @@ public partial class ShinkiRedCardAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsConnectedServer) return;
 
         Spell_Shinki.ReplayRedCard(PortalAlreadyOpen);
     }
@@ -36,6 +34,6 @@ public partial class ShinkiRedCardAction : Action
         {
             PortalAlreadyOpen = portalAlreadyOpen,
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

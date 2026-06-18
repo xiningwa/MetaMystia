@@ -11,7 +11,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class RejectAction : Action
 {
-    public override ActionType Type => ActionType.REJECT;
     public TextId ReasonId { get; set; }
     public string[] ReasonArgs { get; set; } = [];
 
@@ -19,12 +18,12 @@ public partial class RejectAction : Action
 
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var reason = ReasonId.Get(ReasonArgs);
         Log.LogWarning($"Connection rejected: {reason}");
         InGameConsole.ShowPassiveFromAnyThread(reason);
-        MpManager.DisconnectPeer();
+        MpWire.DisconnectPeer();
     }
 
     /// <summary>
@@ -32,7 +31,7 @@ public partial class RejectAction : Action
     /// </summary>
     public static void SendAndDisconnect(int uid, TextId reasonId, params string[] args)
     {
-        new RejectAction { ReasonId = reasonId, ReasonArgs = args }.SendToClient(uid);
-        MpManager.DisconnectClient(uid);
+        new RejectAction { ReasonId = reasonId, ReasonArgs = args, WireTargetUid = uid }.Send();
+        MpWire.DisconnectClient(uid);
     }
 }

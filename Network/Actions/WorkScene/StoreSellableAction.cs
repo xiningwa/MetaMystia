@@ -11,10 +11,9 @@ namespace MetaMystia.Network;
 
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[RoomRelay]
 public partial class StoreSellableAction : Action
 {
-    public override ActionType Type => ActionType.STORE_SELLABLE;
 
     public enum StoreType
     {
@@ -69,7 +68,7 @@ public partial class StoreSellableAction : Action
                     Food = food,
                     FoodType = StoreType.Food
                 };
-                action.SendToHostOrBroadcast();
+                action.Send();
                 break;
             case Sellable.SellableType.Beverage:
                 int beverageId = sellable.id;
@@ -79,7 +78,7 @@ public partial class StoreSellableAction : Action
                     BeverageId = beverageId,
                     FoodType = StoreType.Beverage
                 };
-                action.SendToHostOrBroadcast();
+                action.Send();
                 break;
             default:
                 Log.LogError($"StoreSellableAction.Send called with unsupported sellable type: {sellable.type}");

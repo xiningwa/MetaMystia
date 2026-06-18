@@ -73,7 +73,13 @@ public static class Il2CppInteropPatcher
 
     public static void NotifyIfPatched()
     {
-        if (Patched)
-            InGameConsole.ShowPassive(TextId.Il2CppInteropPatchedRestartRequired.Get());
+        if (!Patched)
+            return;
+
+        var message = TextId.Il2CppInteropPatchedRestartRequired.Get();
+        if (PluginManager.Instance != null)
+            PluginManager.Instance.StartInteropRestartReminder(message);
+        else
+            InGameConsole.LogAlert(message);
     }
 }

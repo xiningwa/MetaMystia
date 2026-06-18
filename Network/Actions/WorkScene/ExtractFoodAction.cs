@@ -11,10 +11,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[RoomRelay]
 public partial class ExtractFoodAction : Action
 {
-    public override ActionType Type => ActionType.EXTRACT_FOOD;
     public SellableFood Food { get; set; }
 
     protected override bool OnSendLogOnlyAction => true;
@@ -37,6 +36,6 @@ public partial class ExtractFoodAction : Action
         {
             Food = food
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

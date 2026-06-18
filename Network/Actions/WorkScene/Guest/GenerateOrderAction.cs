@@ -11,7 +11,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GenerateOrderAction : Action
 {
-    public override ActionType Type => ActionType.GenerateOrderAction;
 
     public int RuntimeId { get; set; }
     public GuestsManager.OrderGenerationResult Result { get; set; }
@@ -73,6 +72,6 @@ public partial class GenerateOrderAction : Action
             NotShowInUI = orderData?.NotShowInUI ?? false,
             FreeOrder = orderData?.FreeOrder ?? false
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

@@ -16,7 +16,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class IzakayaCloseAction : Action
 {
-    public override ActionType Type => ActionType.IZAKAYA_CLOSE;
 
     /// <summary>
     /// 打烊清理回调列表。任何需要在打烊时执行清理的符卡/系统，
@@ -71,6 +70,7 @@ public partial class IzakayaCloseAction : Action
     public static void Broadcast()
     {
         RunCleanupCallbacks();
-        new IzakayaCloseAction().SendToHostOrBroadcast();
+        new IzakayaCloseAction().Send();
+
     }
 }

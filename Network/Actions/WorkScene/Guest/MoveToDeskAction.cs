@@ -6,7 +6,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class MoveToDeskAction : Action
 {
-    public override ActionType Type => ActionType.MoveToDeskAction;
 
     public int RuntimeId { get; set; }
     public int DeskCode { get; set; }
@@ -34,6 +33,6 @@ public partial class MoveToDeskAction : Action
             RuntimeId = runtimeId,
             DeskCode = deskCode
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

@@ -6,14 +6,13 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class SendFromQueueAction : Action
 {
-    public override ActionType Type => ActionType.SendFromQueueAction;
     public int RuntimeId { get; set; }
 
     [DiscardOnStory]
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         PluginManager.Instance.RunOnMainThread(() =>
@@ -31,6 +30,6 @@ public partial class SendFromQueueAction : Action
         {
             RuntimeId = runtimeId,
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

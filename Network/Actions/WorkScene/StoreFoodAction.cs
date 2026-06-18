@@ -9,10 +9,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
+[RoomRelay]
 public partial class StoreFoodAction : Action
 {
-    public override ActionType Type => ActionType.STORE_FOOD;
     public SellableFood Food { get; set; }
 
     protected override bool OnSendLogOnlyAction => true;
@@ -35,6 +34,6 @@ public partial class StoreFoodAction : Action
         {
             Food = food
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

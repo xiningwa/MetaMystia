@@ -20,7 +20,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PatientDepletedDeskAction : Action
 {
-    public override ActionType Type => ActionType.PatientDepletedDeskAction;
 
     public int RuntimeId { get; set; }
 
@@ -28,7 +27,7 @@ public partial class PatientDepletedDeskAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         PluginManager.Instance.RunOnMainThread(() =>
@@ -46,6 +45,6 @@ public partial class PatientDepletedDeskAction : Action
         {
             RuntimeId = runtimeId
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

@@ -15,7 +15,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class PatientDepletedQueueAction : Action
 {
-    public override ActionType Type => ActionType.PatientDepletedQueueAction;
 
     public int RuntimeId { get; set; }
 
@@ -23,7 +22,7 @@ public partial class PatientDepletedQueueAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         PluginManager.Instance.RunOnMainThread(() =>
@@ -41,6 +40,6 @@ public partial class PatientDepletedQueueAction : Action
         {
             RuntimeId = runtimeId
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

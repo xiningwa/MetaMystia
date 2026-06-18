@@ -14,7 +14,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class GuestKillAction : Action
 {
-    public override ActionType Type => ActionType.GuestKillAction;
 
     public int RuntimeId { get; set; }
     public GuestFSM.State HostStateBeforeKill { get; set; }   // 调试用：观测主客状态分歧
@@ -24,7 +23,7 @@ public partial class GuestKillAction : Action
     [CheckScene(Common.UI.Scene.WorkScene)]
     public override void OnReceivedDerived()
     {
-        if (MpManager.IsConnectedHost) return;
+        if (MpManager.IsRoomHost) return;
 
         var rid = RuntimeId;
         var deskCode = DeskCode;
@@ -50,6 +49,6 @@ public partial class GuestKillAction : Action
             HostStateBeforeKill = hostStateBeforeKill,
             DeskCode = deskCode
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }

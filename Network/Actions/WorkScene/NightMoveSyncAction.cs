@@ -7,10 +7,9 @@ namespace MetaMystia.Network;
 /// </summary>
 [MemoryPackable]
 [AutoLog]
-[HostRelay]
-public partial class NightSyncAction : Action
+[PublicRelay]
+public partial class NightMoveSyncAction : Action
 {
-    public override ActionType Type => ActionType.NIGHTSYNC;
     public float Vx { get; set; }
     public float Vy { get; set; }
     public float Px { get; set; }
@@ -25,13 +24,24 @@ public partial class NightSyncAction : Action
     {
         PluginManager.Instance.RunOnMainThread(() =>
         {
-            if (PlayerManager.Peers.TryGetValue(SenderUid, out var peer))
+            if (PlayerManager.TryGetVisiblePeer(SenderUid, out var peer))
                 peer.NightSyncFromPeer(Speed, new UnityEngine.Vector2(Vx, Vy), new UnityEngine.Vector2(Px, Py));
         });
     }
 
-    public static void Send() => SyncAction.Send();
-
-    public new void SendToHostOrBroadcast() => base.SendToHostOrBroadcast();
-    public new void SendToHostOrBroadcastLowPriority() => base.SendToHostOrBroadcastLowPriority();
+    public static void SendSync()
+    {
+        if (!MpManager.CanSeeOnlinePlayers || !MpManager.IsConnected || MpManager.LocalScene != Common.UI.Scene.WorkScene) return;
+        if (!PlayerManager.CharacterSpawnedAndInitialized) return;
+        var inputDirection = PlayerManager.LocalInputDirection;
+        var position = PlayerManager.LocalPosition;
+        new NightMoveSyncAction
+        {
+            Vx = inputDirection.x,
+            Vy = inputDirection.y,
+            Px = position.x,
+            Py = position.y,
+            Speed = PlayerManager.Local.Speed
+        }.Send(lowPriority: true);
+    }
 }

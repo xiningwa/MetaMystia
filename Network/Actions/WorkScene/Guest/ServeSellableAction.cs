@@ -5,7 +5,7 @@ namespace MetaMystia.Network;
 
 /// <summary>
 /// 上菜/撤回 Action。设计参考 docs/GuestFSM-Model.md §2.8。
-/// 不再 <c>[HostRelay]</c>：主机收到客机请求后做冲突仲裁，决定是否接受并广播。
+/// 不再 <c>[RoomRelay]</c>：主机收到客机请求后做冲突仲裁，决定是否接受并广播。
 /// 拒绝时不广播——根本原因（host 当前权威值）必然来自先前某次 host 状态变更，
 /// 那次变更的广播已在主机→sender 的 TCP 流中（队列或在途），sender 早晚会处理并自然回滚。
 /// </summary>
@@ -13,7 +13,6 @@ namespace MetaMystia.Network;
 [AutoLog]
 public partial class ServeSellableAction : Action
 {
-    public override ActionType Type => ActionType.ServeSellableAction;
     public int RuntimeId { get; set; }
     public int OrderSeq { get; set; }
     public SellableFood Requested { get; set; }
@@ -58,6 +57,6 @@ public partial class ServeSellableAction : Action
             SellableType = sellableType,
             SenderUid = senderUid == -1 ? PlayerManager.Local.Uid : senderUid
         };
-        action.SendToHostOrBroadcast();
+        action.Send();
     }
 }
