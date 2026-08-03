@@ -52,6 +52,7 @@ internal static class SpellHelper
         ShinkiPortalInterruptCallbacks.Clear();
     }
 
+<<<<<<< HEAD
     // 打烊清理回调统一登记表：各符卡仅在自身确实启用了需打烊收尾的状态时才登记，
     internal static readonly List<Il2CppSystem.Action> IzakayaCloseCleanupCallbacks = new();
 
