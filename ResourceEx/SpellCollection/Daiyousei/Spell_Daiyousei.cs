@@ -16,7 +16,7 @@ namespace MetaMystia.ResourceEx.SpellCollection.Daiyousei;
 [AutoLog]
 public partial class Spell_Daiyousei : SpellBase
 {
-    // 黑卡「飞雾」Buff 类型值
+    // 黑卡「飞雾」Buff 类型值：落 9000+ 段以规避原生 Buff 枚举占用区（不得落 0~200 原生范围）。
     internal const int DaiyouseiFogBuffType = 9001;
 
     // 黑卡「飞雾」Buff 持续秒数。

@@ -248,8 +248,12 @@
     "Spell_Daiyousei_SummonFriend": "大妖精邀请{0}来吃饭了",
     "Spell_Daiyousei_SummonKeine": "慧音老师来惩罚不听话的翘课的孩子们了",
     "Spell_Daiyousei_GrantFruit": "大妖精的朋友们捎来了水果！",
-    "Spell_Shinki_BuffName": "（待定显示名）",
-    "Spell_Shinki_BuffDesc": "（待定描述）",
+    "Spell_Shinki_BuffName": "环游魔界",
+    "Spell_Shinki_BuffDesc": "本夜剩余时间，打开神绮的传送门",
+    "Spell_Shinki_NameRed": "「魔神降临」",
+    "Spell_Shinki_DescRed": "神绮开启无尽的魔界传送门，持续召唤魔界客人",
+    "Spell_Shinki_NameBlack": "绮符「环游魔界80天」",
+    "Spell_Shinki_DescBlack": "神绮邀请所有客人前往魔界游玩",
     "Spell_Koakuma_BuffName": "（待定显示名）",
     "Spell_Koakuma_BuffDesc": "（待定描述）"
 }

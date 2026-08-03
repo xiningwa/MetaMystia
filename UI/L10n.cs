@@ -329,6 +329,10 @@ public enum TextId
     Spell_Daiyousei_GrantFruit,
     Spell_Shinki_BuffName,
     Spell_Shinki_BuffDesc,
+    Spell_Shinki_NameRed,
+    Spell_Shinki_DescRed,
+    Spell_Shinki_NameBlack,
+    Spell_Shinki_DescBlack,
     Spell_Koakuma_BuffName,
     Spell_Koakuma_BuffDesc,
 }

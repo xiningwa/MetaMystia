@@ -33,6 +33,8 @@ public static partial class NightSceneEventManagerPatch
     {
         ResourceExManager.RegisterDaiyouseiSpell();
         ResourceExManager.RegisterDaiyouseiBuff();
+        ResourceExManager.RegisterShinkiSpell();
+        ResourceExManager.RegisterShinkiBuff();
 
         if (!MpManager.IsConnected) return;
 

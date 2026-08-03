@@ -49,6 +49,8 @@ public static partial class PatchRegistry
         typeof(NormalGuestsControllerPatch),
         typeof(SpellDeclareCutinCharacterPatch),
 
+        typeof(MetaMystia.Patches.NightScene.ConsistentBuffPatch),
+
         typeof(RunTimeAlbumPatch),
         typeof(RunTimeSchedulerPatch),
 

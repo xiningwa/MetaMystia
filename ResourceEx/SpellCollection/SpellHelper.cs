@@ -24,6 +24,7 @@ internal static class SpellHelper
 {
     internal const string DaiyouseiOwnerIdentifier = "_ResourceExample_Daiyousei";
     private const string KoakumaOwnerIdentifier = "_ResourceExample_Koakuma";
+    internal const string ShinkiOwnerIdentifier = "_ResourceExample_Shinki";
     private const float CutinOffsetY = -300f;
     private const int CutinFlagExpireFrames = 5;
 
@@ -32,6 +33,24 @@ internal static class SpellHelper
     private const bool SummonRecordToIzakaya = true;
     private const bool SummonTryToJumpQueue = false;
     private const bool SummonShouldFade = true;
+
+    // 神绮传送门常驻 Buff 的中断回调集合：由 U8 为每个注册的稀客 id 各写入一个，U11 打烊/驱逐兜底时逐一调用以主动结束 Buff。
+    // 设计上传送门 Buff 永不自动结束，但无限时间会令场上永久有客人、无法打烊，故须由打烊流程主动中断。
+    // 因神绮存在多个稀客 id（原版 + ResourceEx 9004），需以列表保存各实例的中断回调。
+    internal static readonly List<Il2CppSystem.Action> ShinkiPortalInterruptCallbacks = new();
+
+    /// <summary>
+    /// 主动中断所有已注册的神绮传送门常驻 Buff，并清空中断回调列表。
+    /// 黑卡驱逐或 U11 打烊兜底时调用，逐一触发各稀客 id 实例的中断回调。
+    /// </summary>
+    internal static void InterruptAllShinkiPortalBuffs()
+    {
+        foreach (var interrupt in ShinkiPortalInterruptCallbacks)
+        {
+            interrupt?.Invoke();
+        }
+        ShinkiPortalInterruptCallbacks.Clear();
+    }
 
     // 单例静态待消费状态：运行时仅保留最后一次 Set 的结果
     // 仅限主线程调用
@@ -55,6 +74,7 @@ internal static class SpellHelper
     {
         [DaiyouseiOwnerIdentifier] = CutinOffsetY,
         [KoakumaOwnerIdentifier] = CutinOffsetY,
+        [ShinkiOwnerIdentifier] = CutinOffsetY,
     };
 
     /// <summary>
@@ -95,7 +115,7 @@ internal static class SpellHelper
         return CutinShift.TryGetValue(ownerIdentifier, out offsetY);
     }
 
-    // 符卡 Buff 注册封装（适配原生 EventManager 四种形态：持续 / 次数 / 手动 / 常驻）
+    // 符卡 Buff 注册封装（适配原生 EventManager 三种形态：持续 / 次数 / 常驻；手动形态为原游戏未启用死 API，已弃置）
 
     /// <summary>
     /// 数值型 Buff 描述模板中的剩余量占位符，模板须先经 RegisterBuffDescription 注入。
@@ -174,17 +194,6 @@ internal static class SpellHelper
            ?? throw new InvalidOperationException("Buff 描述回调（数值型）的 il2cpp 委托转换失败。");
 
     /// <summary>
-    /// 构建进度描述回调（手动形态），每帧把 $t 替换为进度值。
-    /// </summary>
-    /// <returns>il2cpp Func&lt;float,string,string&gt; 委托。</returns>
-    private static Il2CppSystem.Func<float, string, string> BuildProgressContextOverride()
-        => DelegateSupport.ConvertDelegate<Il2CppSystem.Func<float, string, string>>(
-            (Func<float, string, string>)((progress, template) =>
-                template == null ? WarnNullBuffDescriptionTemplate()
-                                 : template.Replace(RemainingValuePlaceholder, progress.ToString())))
-           ?? throw new InvalidOperationException("Buff 描述回调（进度型）的 il2cpp 委托转换失败。");
-
-    /// <summary>
     /// 把托管 Func&lt;string,string&gt; 转换为 il2cpp 委托（常驻形态描述用，调用方自行处理 $a/$b 占位符）。
     /// </summary>
     /// <param name="managed">托管描述回调。</param>
@@ -193,23 +202,6 @@ internal static class SpellHelper
         => DelegateSupport.ConvertDelegate<Il2CppSystem.Func<string, string>>(managed)
            ?? throw new InvalidOperationException("Buff 描述回调（常驻型）的 il2cpp 委托转换失败。");
 
-    /// <summary>
-    /// 把托管 Func&lt;float,string,string&gt; 转换为 il2cpp 委托（手动形态自定义描述用）。
-    /// </summary>
-    /// <param name="managed">托管描述回调。</param>
-    /// <returns>转换后的 il2cpp 委托。</returns>
-    private static Il2CppSystem.Func<float, string, string> ToIl2CppFuncFloatStringString(Func<float, string, string> managed)
-        => DelegateSupport.ConvertDelegate<Il2CppSystem.Func<float, string, string>>(managed)
-           ?? throw new InvalidOperationException("Buff 描述回调（手动自定义）的 il2cpp 委托转换失败。");
-
-    /// <summary>
-    /// 把托管 Func&lt;float,float&gt; 转换为 il2cpp 委托（手动形态进度映射用）。
-    /// </summary>
-    /// <param name="managed">托管进度映射回调。</param>
-    /// <returns>转换后的 il2cpp 委托。</returns>
-    private static Il2CppSystem.Func<float, float> ToIl2CppFuncFloatFloat(Func<float, float> managed)
-        => DelegateSupport.ConvertDelegate<Il2CppSystem.Func<float, float>>(managed)
-           ?? throw new InvalidOperationException("Buff 进度映射回调的 il2cpp 委托转换失败。");
 
     /// <summary>
     /// 构建结束/退出回调并登记保活，Buff 结束或手动退出时移除保活条目。
@@ -246,10 +238,11 @@ internal static class SpellHelper
     }
 
     /// <summary>
-    /// 注册一个持续定时 Buff，按 durationSeconds 自动倒数，计时与 UI 刷新由游戏原生接管。
+    /// 注册一个持续定时 Buff：普通值按 durationSeconds 自动倒数；极大值 int.MaxValue 视作"伪常驻"
+    /// （不写入倒计时表、Buff 栏不显示剩余秒数，仅由 onInterruptThisBuffCallback 主动中断）。
     /// </summary>
     /// <param name="eventManager">夜晚场景事件管理器实例，非空。</param>
-    /// <param name="durationSeconds">Buff 总持续秒数，须为正数。</param>
+    /// <param name="durationSeconds">Buff 总持续秒数，须为正数；传 int.MaxValue 表示伪常驻。</param>
     /// <param name="buffType">自定义 Buff 类型。</param>
     /// <param name="onInterruptThisBuffCallback">输出：主动中断此 Buff 的回调。</param>
     /// <param name="onBuffEnd">Buff 结束时的托管回调，无则传 null。</param>
@@ -267,7 +260,11 @@ internal static class SpellHelper
         }
 
         var keepAliveEntry = new List<object>();
-        BuffDurationByType[buffType] = durationSeconds;
+        // 伪常驻（极大值）不写入倒计时表：Buff 栏不显示剩余秒数，避免原生每帧算出约 68 年的巨大数字。
+        if (durationSeconds != int.MaxValue)
+        {
+            BuffDurationByType[buffType] = durationSeconds;
+        }
         var onBuffEndCallback = BuildEndCallback(keepAliveEntry, onBuffEnd);
 
         // currentBuffContextOverride 传 null：$t 替换由渲染包装器按原生 progress 接管
@@ -316,51 +313,11 @@ internal static class SpellHelper
     }
 
     /// <summary>
-    /// 注册一个手动带进度 Buff，进度由调用方经 onUpdatingBuffCallback 自行驱动，不自动到期，描述每帧将模板中的 $t 替换为当前进度。
+    /// 注册一个常驻 Buff，无自动倒数或计数，由调用方经 onInterruptThisBuffCallback 主动中断或 onBuffEnd 结束。
     /// </summary>
     /// <param name="eventManager">夜晚场景事件管理器实例，非空。</param>
     /// <param name="buffType">自定义 Buff 类型。</param>
-    /// <param name="onUpdatingBuffCallback">输出：推送进度的更新回调。</param>
-    /// <param name="onBuffExitCallback">输出：主动结束此 Buff 的退出回调。</param>
-    /// <param name="onBuffEnd">Buff 结束时的托管回调，无则传 null。</param>
-    /// <param name="onGettingCurrentBuffContext">可选的自定义描述回调，不传则用默认 $t 进度描述。</param>
-    /// <param name="onGettingCurrentBuffProgress">可选的进度映射回调，不传则由游戏按默认进度显示。</param>
-    internal static void RegisterPermanentBuff(
-        EventManager eventManager,
-        EventManager.BuffType buffType,
-        out Il2CppSystem.Action<float> onUpdatingBuffCallback,
-        out Il2CppSystem.Action onBuffExitCallback,
-        Action? onBuffEnd = null,
-        Func<float, string, string>? onGettingCurrentBuffContext = null,
-        Func<float, float>? onGettingCurrentBuffProgress = null)
-    {
-        ArgumentNullException.ThrowIfNull(eventManager);
-
-        var keepAliveEntry = new List<object>();
-        var descriptionCallback = onGettingCurrentBuffContext == null
-            ? BuildProgressContextOverride()
-            : ToIl2CppFuncFloatStringString(onGettingCurrentBuffContext);
-        keepAliveEntry.Add(descriptionCallback);
-        var onBuffEndCallback = BuildEndCallback(keepAliveEntry, onBuffEnd);
-
-        var progressCallback = onGettingCurrentBuffProgress == null
-            ? null
-            : ToIl2CppFuncFloatFloat(onGettingCurrentBuffProgress);
-        if (progressCallback != null) keepAliveEntry.Add(progressCallback);
-
-        eventManager.RegisterManualControlledBuff(
-            buffType, onBuffEndCallback, out onUpdatingBuffCallback, descriptionCallback, progressCallback, out onBuffExitCallback);
-
-        onBuffExitCallback = BuildInterruptCallback(keepAliveEntry, onBuffExitCallback);
-        BuffDelegateKeepAlive.Add(keepAliveEntry);
-    }
-
-    /// <summary>
-    /// 注册一个常驻 Buff，无自动倒数或计数，由调用方经 onInterruptThisBuffCallback 主动中断或 onBuffEnd 结束，描述由 getBuffDescriptionCallback 计算且不随帧变化。
-    /// </summary>
-    /// <param name="eventManager">夜晚场景事件管理器实例，非空。</param>
-    /// <param name="buffType">自定义 Buff 类型。</param>
-    /// <param name="getBuffDescriptionCallback">描述回调，将模板转为显示文本，无则传 null。</param>
+    /// <param name="getBuffDescriptionCallback">描述回调，保留参数；CONSISTENT 形态恒传 null，描述由通用接管处用完好串兜底写入。</param>
     /// <param name="onBuffEnd">Buff 结束时的托管回调，无则传 null。</param>
     /// <param name="onInterruptThisBuffCallback">输出：主动中断此 Buff 的回调。</param>
     internal static void RegisterConsistentBuff(
