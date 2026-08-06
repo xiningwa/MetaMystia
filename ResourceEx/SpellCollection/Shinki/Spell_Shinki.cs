@@ -2,8 +2,11 @@ using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Il2CppInterop.Runtime.Attributes;
 using Il2CppSystem.Collections;
 using System.Collections.Generic;
+using Il2CppSystem.Linq;
 using GameData.Core.Collections.CharacterUtility;
+using GameData.Core.Collections.NightSceneUtility;
 using GameData.Profile;
+using MetaMystia.ResourceEx.SpellCollection;
 using NightScene.EventUtility;
 using NightScene.GuestManagementUtility;
 using SgrYuki;
@@ -19,7 +22,7 @@ public partial class Spell_Shinki : SpellBase
 {
     internal const int ShinkiPortalBuffType = 9002;
 
-    // 传送门视觉贴图路径：当前复用 Buff 图标素材。
+    // 传送门视觉贴图路径：复用神绮 Buff 图标素材（rex:// 资源包内 9004_1.png）。
     private const string PortalVisualUri = "rex://ResourceExample/assets/Buff/9004_1.png";
     // 传送门屏幕水平锚点比例（0~1）：屏幕中央（不依赖相机/世界坐标）。
     private const float PortalScreenXRatio = 0.50f;
@@ -74,6 +77,17 @@ public partial class Spell_Shinki : SpellBase
     // 周期召唤是否已激活的标记：防止红卡重复触发导致定时器重复注册。
     private static bool _portalSummoningActive;
 
+    // 黑卡动画：魔界客人从待机位走向传送门的步行时长（秒）。
+    private const float BlackCardWalkDuration = 4f;
+    // 黑卡动画：传送门展示（神绮淡出后留存）时长（秒），仅留极短余韵便于感知收束，随即关闭。
+    private const float BlackCardPortalDisplayDuration = 0.3f;
+    // 黑卡动画：移动指令的旋转参数，-1 表示沿用角色默认朝向（原生 MoveToTargetPosition 约定）。
+    private const int BlackCardMoveRotationDefault = -1;
+    // 黑卡动画：神绮待机位相对传送门的右下方世界偏移（portal + 此偏移），用于开门前站位，神绮最终也在此位淡出离场。
+    private static readonly UnityEngine.Vector3 BlackCardShinkiStandOffset = new UnityEngine.Vector3(1.5f, -1.0f, 0f);
+    // 黑卡动画：客人到达传送门后淡出的兜底超时（秒），防止个别客人卡寻路导致主协程挂死。
+    private const float BlackCardGuestLeaveTimeout = 7f;
+
     /// <summary>
     /// 返回符卡归属角色标识，供宣言日志与立绘偏移识别使用。
     /// 标识统一取自 SpellHelper.ShinkiOwnerIdentifier，保证与立绘偏移表键一致。
@@ -119,15 +133,103 @@ public partial class Spell_Shinki : SpellBase
     }
 
     /// <summary>
-    /// 黑卡「绮符·环游魔界80天」效果入口：移除红卡注册的传送门 Buff 并驱逐客人。
-    /// 黑卡本身不注册 Buff；传送门 Buff 由本方法主动中断。
+    /// 黑卡「绮符·环游魔界80天」效果入口：启动黑卡驱逐动画协程，驱赶魔界客人并送神绮离场。
     /// </summary>
-    /// <param name="spellExecutionContext">符卡执行上下文，提供角色与回调等信息</param>
+    /// <param name="spellExecutionContext">符卡执行上下文，提供触发角色控制器等信息</param>
     /// <returns>il2cpp 协程迭代器</returns>
     public override IEnumerator OnNegativeBuffExecute(SpellExecutionContext spellExecutionContext)
     {
-        RemovePortalBuff();
-        return null;
+        return NegativeBuffRoutine(spellExecutionContext).WrapToIl2Cpp();
+    }
+
+    /// <summary>
+    /// 黑卡主协程：停召唤与传送门 Buff，播放神绮走位开门、客人走向传送门淡出、神绮淡出，末尾销毁传送门视觉。
+    /// </summary>
+    /// <param name="spellExecutionContext">符卡执行上下文，含触发符卡的神绮控制器。</param>
+    /// <returns>托管协程迭代器</returns>
+    [HideFromIl2Cpp]
+    private static System.Collections.IEnumerator NegativeBuffRoutine(SpellExecutionContext spellExecutionContext)
+    {
+        Log.LogInfo("[Shinki] 黑卡【绮符·环游魔界80天】触发，开始驱逐动画");
+
+        SpellHelper.InterruptAllShinkiPortalBuffs();
+        StopPortalSummoning();
+
+        var shinkiController = ResolveShinkiController(spellExecutionContext);
+        var affectedGuests = CollectAffectedGuests(shinkiController);
+
+        if (shinkiController == null && affectedGuests.Count == 0)
+        {
+            Log.LogInfo("[Shinki] 黑卡：场上无神绮与魔界客人，跳过动画");
+            DestroyPortalVisual();
+            yield break;
+        }
+
+        var portalPosition = DeterminePortalPosition();
+        var shinkiStandPos = portalPosition + BlackCardShinkiStandOffset;
+
+        foreach (var ctrl in affectedGuests)
+        {
+            PartialCleanupForBlackCard(ctrl);
+        }
+        if (shinkiController != null)
+        {
+            PartialCleanupForBlackCard(shinkiController);
+        }
+
+        if (shinkiController != null)
+        {
+            shinkiController.MoveToTargetPosition(
+                BlackCardMoveRotationDefault,
+                new Il2CppSystem.Nullable<UnityEngine.Vector3>(shinkiStandPos),
+                UnityEngine.Vector3Int.zero,
+                false,
+                null);
+        }
+        yield return new UnityEngine.WaitForSeconds(BlackCardWalkDuration);
+        CreatePortalVisual();
+
+        var leaveTracker = new BlackCardLeaveTracker(affectedGuests);
+        foreach (var ctrl in affectedGuests)
+        {
+            if (ctrl == null) continue;
+            ctrl.MoveToTargetPosition(
+                BlackCardMoveRotationDefault,
+                new Il2CppSystem.Nullable<UnityEngine.Vector3>(portalPosition),
+                UnityEngine.Vector3Int.zero,
+                false,
+                Il2CppInterop.Runtime.DelegateSupport.ConvertDelegate<Il2CppSystem.Action<GuestGroupController>>(
+                    new System.Action<GuestGroupController>(leaveTracker.OnGuestArrived)));
+        }
+
+        var guestLeaveElapsed = 0f;
+        while (guestLeaveElapsed < BlackCardGuestLeaveTimeout)
+        {
+            foreach (var ctrl in leaveTracker.ConsumeArrived())
+            {
+                RepelGuestSafely(ctrl);
+            }
+            if (leaveTracker.Remaining == 0 && !leaveTracker.HasPending) break;
+            yield return null;
+            guestLeaveElapsed += UnityEngine.Time.deltaTime;
+        }
+        foreach (var ctrl in leaveTracker.ConsumeArrived())
+        {
+            RepelGuestSafely(ctrl);
+        }
+        if (leaveTracker.Remaining > 0)
+        {
+            Log.LogWarning($"[Shinki] 黑卡：{leaveTracker.Remaining} 名客人超时未离场，强制进入神绮离场阶段");
+        }
+
+        if (shinkiController != null)
+        {
+            RepelGuestSafely(shinkiController);
+        }
+
+        yield return new UnityEngine.WaitForSeconds(BlackCardPortalDisplayDuration);
+        DestroyPortalVisual();
+        Log.LogInfo("[Shinki] 黑卡驱逐完成，魔界客人已送返");
     }
 
     /// <summary>
@@ -156,6 +258,158 @@ public partial class Spell_Shinki : SpellBase
         SpellHelper.InterruptAllShinkiPortalBuffs();
         StopPortalSummoning();
         DestroyPortalVisual();
+    }
+
+    /// <summary>
+    /// 取触发符卡的神绮本人控制器：直接取上下文的触发控制器（单机与联机均有效，无需 GuestsMap 登记）。
+    /// </summary>
+    /// <param name="spellExecutionContext">符卡执行上下文，含触发符卡的特殊客人控制器。</param>
+    /// <returns>神绮控制器；上下文无控制器时返回 null。</returns>
+    [HideFromIl2Cpp]
+    private static GuestGroupController ResolveShinkiController(SpellExecutionContext spellExecutionContext)
+    {
+        return spellExecutionContext?.GuestsController;
+    }
+
+    /// <summary>
+    /// 收集黑卡需驱逐的魔界客人：原生枚举在座与排队控制器，排除神绮本体。
+    /// </summary>
+    /// <param name="shinkiController">神绮控制器实例，用于从受影响的客人中剔除神绮本人；空则不做剔除。</param>
+    /// <returns>受影响魔界客人控制器列表。</returns>
+    [HideFromIl2Cpp]
+    private static List<GuestGroupController> CollectAffectedGuests(GuestGroupController shinkiController)
+    {
+        var affected = new List<GuestGroupController>();
+        var guestsManager = GuestsManager.Instance;
+        if (guestsManager != null)
+        {
+            foreach (var ctrl in guestsManager.AllGuestInDeskController.ToArray())
+            {
+                if (ctrl == null || IsSameController(ctrl, shinkiController)) continue;
+                affected.Add(ctrl);
+            }
+        }
+        foreach (var ctrl in GuestGroupController.QueuedGuestControllers.ToArray())
+        {
+            if (ctrl == null || IsSameController(ctrl, shinkiController)) continue;
+            affected.Add(ctrl);
+        }
+        return affected;
+    }
+
+    /// <summary>
+    /// 判断两个客人控制器是否指向同一原生对象：IL2CPP 下每次访问会生成新托管包装，须比原生指针而非引用。
+    /// </summary>
+    /// <param name="a">待比较控制器甲。</param>
+    /// <param name="b">待比较控制器乙。</param>
+    /// <returns>指向同一原生对象返回 true。</returns>
+    [HideFromIl2Cpp]
+    private static bool IsSameController(GuestGroupController a, GuestGroupController b)
+    {
+        return a != null && b != null && a.Pointer == b.Pointer;
+    }
+
+    /// <summary>
+    /// 黑卡客人离场追踪器：以命名方法作为原生到达回调
+    /// 到达回调仅把客人原生指针登记入待离场集合，真正的离场由主协程在下一帧执行，
+    /// 使离场动作与到达回调解耦，避免在同一调用栈内重入移动完成回调。
+    /// </summary>
+    private class BlackCardLeaveTracker
+    {
+        internal int Remaining { get; private set; }
+
+        private readonly HashSet<long> _arrivedPointers = new();
+
+        private readonly Dictionary<long, GuestGroupController> _pointerToController = new();
+
+        /// <summary>
+        /// 构造追踪器：登记所有受影响客人的指针与控制器映射，初始化剩余计数。
+        /// </summary>
+        /// <param name="affectedGuests">受影响客人控制器列表（已过滤 null）。</param>
+        internal BlackCardLeaveTracker(List<GuestGroupController> affectedGuests)
+        {
+            Remaining = affectedGuests.Count;
+            foreach (var ctrl in affectedGuests)
+            {
+                if (ctrl == null) continue;
+                _pointerToController[ctrl.Pointer.ToInt64()] = ctrl;
+            }
+        }
+
+        /// <summary>
+        /// 原生移动到达回调：客人走到传送门后将其原生指针登记入待离场集合（不直接离场）。
+        /// </summary>
+        /// <param name="arrivedController">到达传送门的客人控制器（原生回调传入）。</param>
+        internal void OnGuestArrived(GuestGroupController arrivedController)
+        {
+            if (arrivedController == null) return;
+            var pointer = arrivedController.Pointer.ToInt64();
+            if (_arrivedPointers.Add(pointer) && Remaining > 0)
+            {
+                Remaining--;
+            }
+        }
+
+        /// <summary>
+        /// 取出并清空当前已登记的待离场客人控制器列表。
+        /// </summary>
+        /// <returns>已登记待离场的客人控制器列表。</returns>
+        internal List<GuestGroupController> ConsumeArrived()
+        {
+            var arrived = new List<GuestGroupController>();
+            foreach (var pointer in _arrivedPointers)
+            {
+                if (_pointerToController.TryGetValue(pointer, out var ctrl) && ctrl != null)
+                {
+                    arrived.Add(ctrl);
+                }
+            }
+            _arrivedPointers.Clear();
+            return arrived;
+        }
+
+        /// <summary>
+        /// 是否仍有已登记但主协程尚未消费的待离场客人（用于主协程提前退出判定）。
+        /// </summary>
+        internal bool HasPending => _arrivedPointers.Count > 0;
+    }
+
+    /// <summary>
+    /// 黑卡阶段清理：清理客人的订单面板与排队登记、移除耐心倒计时，但保留桌位待淡出时释放。
+    /// </summary>
+    /// <param name="controller">目标客人控制器；空则跳过。</param>
+    [HideFromIl2Cpp]
+    private static void PartialCleanupForBlackCard(GuestGroupController controller)
+    {
+        if (controller == null) return;
+        if (controller.DeskCode != -1)
+        {
+            GuestsManager.Instance.RemoveFromPatientCountdown(controller);
+            GuestFSM.TryCloseServePanel(controller.DeskCode);
+        }
+        else if (controller.IsQueued(out _))
+        {
+            controller.RemoveFromQueue();
+            GuestsManager.Instance.RemoveFromPatientCountdown(controller);
+        }
+    }
+
+    /// <summary>
+    /// 黑卡安全离场：按客人是否已入座选择原生离场 API。已入座客人（DeskCode 有效）用 LeaveFromDesk(Fading) 淡出；
+    /// </summary>
+    /// <param name="controller">目标客人控制器；空则跳过。</param>
+    [HideFromIl2Cpp]
+    private static void RepelGuestSafely(GuestGroupController controller)
+    {
+        if (controller == null) return;
+        if (controller.DeskCode != -1)
+        {
+            GuestsManager.Instance.LeaveFromDesk(controller, GuestGroupController.LeaveType.Fading, null, false);
+        }
+        else
+        {
+            GuestsManager.Instance.FlyCharaRepell(controller);
+        }
     }
 
     /// <summary>
