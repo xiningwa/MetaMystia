@@ -247,14 +247,27 @@ public partial class Spell_Shinki : SpellBase
             null,
             out var onInterruptThisBuffCallback);
         SpellHelper.ShinkiPortalInterruptCallbacks.Add(onInterruptThisBuffCallback);
+        SpellHelper.RegisterIzakayaCloseCleanup(
+            Il2CppInterop.Runtime.DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(
+                new System.Action(OnIzakayaClosing)));
     }
 
     /// <summary>
-    /// 移除神绮传送门常驻 Buff：主动中断红卡注册的全部传送门 Buff、取消周期召唤定时器，并销毁传送门视觉。
+    /// 打烊兜底入口：夜场结束时由 U11 打烊 Patch 调用，主动中断常驻传送门 Buff、取消周期召唤并销毁视觉。
     /// </summary>
     [HideFromIl2Cpp]
-    private void RemovePortalBuff()
+    internal static void OnIzakayaClosing()
     {
+        CleanupPortalState();
+        Log.LogInfo("[Shinki] 打烊兜底：已中断传送门常驻 Buff 并清理召唤与视觉");
+    }
+
+    /// <summary>
+    /// 神绮传送门状态清理核心：中断全部常驻传送门 Buff、取消周期召唤定时器、销毁传送门视觉。
+    /// 黑卡驱逐与打烊兜底共用，集中单一清理路径避免重复逻辑。
+    /// </summary>
+    [HideFromIl2Cpp]
+    private static void CleanupPortalState()    {
         SpellHelper.InterruptAllShinkiPortalBuffs();
         StopPortalSummoning();
         DestroyPortalVisual();

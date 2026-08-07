@@ -52,6 +52,35 @@ internal static class SpellHelper
         ShinkiPortalInterruptCallbacks.Clear();
     }
 
+    // 打烊清理回调统一登记表：各符卡仅在自身确实启用了需打烊收尾的状态时才登记，
+    internal static readonly List<Il2CppSystem.Action> IzakayaCloseCleanupCallbacks = new();
+
+    /// <summary>
+    /// 登记一个打烊清理回调：仅当符卡自身确有待收尾状态时调用，避免无条件打烊钩子空跑。
+    /// </summary>
+    /// <param name="cleanup">打烊时需执行的清理动作（如中断常驻 Buff、销毁视觉）。</param>
+    internal static void RegisterIzakayaCloseCleanup(Il2CppSystem.Action cleanup)
+    {
+        if (cleanup != null)
+        {
+            IzakayaCloseCleanupCallbacks.Add(cleanup);
+        }
+    }
+
+    /// <summary>
+    /// 打烊中枢：逐一执行已登记的符卡清理回调；无符卡登记时直接返回，零开销。
+    /// 由单一打烊 Patch 调用，避免每个符卡各挂独立 Hook。
+    /// </summary>
+    internal static void RunAllIzakayaCloseCleanups()
+    {
+        if (IzakayaCloseCleanupCallbacks.Count == 0) return;
+        foreach (var cleanup in IzakayaCloseCleanupCallbacks)
+        {
+            cleanup?.Invoke();
+        }
+        IzakayaCloseCleanupCallbacks.Clear();
+    }
+
     // 单例静态待消费状态：运行时仅保留最后一次 Set 的结果
     // 仅限主线程调用
     private static string? _pendingCutinOwnerId;

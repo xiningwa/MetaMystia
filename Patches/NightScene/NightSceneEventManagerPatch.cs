@@ -52,7 +52,7 @@ public static partial class NightSceneEventManagerPatch
             Log.Warning("已临时禁用造物者之盒协程。");
         }
     }
-    
+
 
     [HarmonyPatch(nameof(EventManager.Fever))]
     [HarmonyPrefix]
@@ -92,6 +92,16 @@ public static partial class NightSceneEventManagerPatch
     [HarmonyPatch(nameof(EventManager.StopInstantiationLoopAndCloseIzakaya))]
     [HarmonyReversePatch]
     public static void StopInstantiationLoopAndCloseIzakaya_ReversePatch(EventManager __instance) { }
+
+    /// <summary>
+    /// 打烊清理中枢：打烊真正执行后，分发各符卡已登记的打烊清理回调（神绮传送门等）。
+    /// </summary>
+    [HarmonyPatch(nameof(EventManager.StopInstantiationLoopAndCloseIzakaya))]
+    [HarmonyPostfix]
+    public static void StopInstantiationLoopAndCloseIzakaya_Postfix()
+    {
+        SpellHelper.RunAllIzakayaCloseCleanups();
+    }
 
     [HarmonyPatch(nameof(EventManager.FundEdit))]
     [HarmonyPrefix]
