@@ -35,6 +35,8 @@ public static partial class NightSceneEventManagerPatch
         ResourceExManager.RegisterDaiyouseiBuff();
         ResourceExManager.RegisterShinkiSpell();
         ResourceExManager.RegisterShinkiBuff();
+        ResourceExManager.RegisterKoakumaSpell();
+        ResourceExManager.RegisterKoakumaBuff();
 
         if (!MpManager.IsConnected) return;
 

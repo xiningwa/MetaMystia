@@ -23,7 +23,7 @@ namespace MetaMystia.ResourceEx.SpellCollection;
 internal static class SpellHelper
 {
     internal const string DaiyouseiOwnerIdentifier = "_ResourceExample_Daiyousei";
-    private const string KoakumaOwnerIdentifier = "_ResourceExample_Koakuma";
+    internal const string KoakumaOwnerIdentifier = "_ResourceExample_Koakuma";
     internal const string ShinkiOwnerIdentifier = "_ResourceExample_Shinki";
     private const float CutinOffsetY = -300f;
     private const int CutinFlagExpireFrames = 5;

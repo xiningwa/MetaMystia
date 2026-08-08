@@ -333,8 +333,14 @@ public enum TextId
     Spell_Shinki_DescRed,
     Spell_Shinki_NameBlack,
     Spell_Shinki_DescBlack,
-    Spell_Koakuma_BuffName,
-    Spell_Koakuma_BuffDesc,
+    Spell_Koakuma_NameRed,
+    Spell_Koakuma_DescRed,
+    Spell_Koakuma_NameBlack,
+    Spell_Koakuma_DescBlack,
+    Spell_KoakumaEcho_BuffName,
+    Spell_KoakumaEcho_BuffDesc,
+    Spell_KoakumaChaos_BuffName,
+    Spell_KoakumaChaos_BuffDesc,
 }
 
 public static class L10n
