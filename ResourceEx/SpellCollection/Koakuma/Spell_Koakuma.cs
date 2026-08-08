@@ -19,6 +19,10 @@ public partial class Spell_Koakuma : SpellBase
     internal const int KoakumaEchoBuffType = 9003;
     // 小恶魔混沌 Buff 类型值
     internal const int KoakumaChaosBuffType = 9005;
+    // 红卡回响 Buff 计数（次）
+    private const int KoakumaEchoCount = 3;
+    // 黑卡混沌 Buff 持续秒数
+    private const int KoakumaChaosDurationSeconds = 30;
 
     /// <summary>
     /// 返回符卡归属角色标识，供宣言日志与立绘偏移识别使用。
@@ -52,14 +56,28 @@ public partial class Spell_Koakuma : SpellBase
     }
 
     /// <summary>
-    /// 红卡主协程占位
+    /// 红卡主协程
     /// </summary>
     /// <returns>托管协程迭代器</returns>
     [HideFromIl2Cpp]
     private System.Collections.IEnumerator PositiveBuffRoutine()
     {
-        Log.LogInfo("[Koakuma] 红卡【灵符·遗失典籍的回响】触发（空占位，效果待 U13）");
+        Log.LogInfo("[Koakuma] 红卡【灵符·遗失典籍的回响】触发，激活回响 Buff（9003）");
+        SpellHelper.RegisterCountedBuff(
+            Manager,
+            KoakumaEchoCount,
+            EventManager.MathOperation.Set,
+            (EventManager.BuffType)KoakumaEchoBuffType,
+            OnEchoBuffDeduct);
         yield break;
+    }
+
+    /// <summary>
+    /// 回响 Buff 每次扣除的占位回调
+    /// </summary>
+    [HideFromIl2Cpp]
+    private static void OnEchoBuffDeduct()
+    {
     }
 
     /// <summary>
@@ -73,13 +91,19 @@ public partial class Spell_Koakuma : SpellBase
     }
 
     /// <summary>
-    /// 黑卡主协程占位
+    /// 黑卡主协程
+
     /// </summary>
     /// <returns>托管协程迭代器</returns>
     [HideFromIl2Cpp]
     private System.Collections.IEnumerator NegativeBuffRoutine()
     {
-        Log.LogInfo("[Koakuma] 黑卡【幻符·献给巴瓦鲁的镇魂曲】触发（空占位，效果待 U13/U14）");
+        Log.LogInfo("[Koakuma] 黑卡【幻符·献给巴瓦鲁的镇魂曲】触发，激活混沌 Buff（9005）");
+        SpellHelper.RegisterTimedBuff(
+            Manager,
+            KoakumaChaosDurationSeconds,
+            (EventManager.BuffType)KoakumaChaosBuffType,
+            out _);
         yield break;
     }
 }
