@@ -73,11 +73,11 @@ public partial class Spell_Koakuma : SpellBase
     }
 
     /// <summary>
-    /// 回响 Buff 每次扣除的占位回调
-    /// </summary>
+    /// 回响 Buff 每次扣除时的回调
     [HideFromIl2Cpp]
     private static void OnEchoBuffDeduct()
     {
+        Log.LogInfo("[Koakuma] 回响 Buff 扣除一次，待 U13 实现 tag 揭示");
     }
 
     /// <summary>

@@ -151,15 +151,11 @@ internal static class SpellHelper
     /// </summary>
     internal const string RemainingValuePlaceholder = "$t";
 
+
     /// <summary>
     /// il2cpp 委托保活表：注册任意形态 Buff 时转换出的委托须在 Buff 存续期间持有托管引用，Buff 结束/中断时移除对应条目。
     /// </summary>
     private static readonly List<object> BuffDelegateKeepAlive = new();
-
-    /// <summary>
-    /// 描述模板为 null 时的一次性告警标记，避免每帧回调重复刷屏；每次 Mod 初始化由 ResetBuffDelegateState 重置。
-    /// </summary>
-    private static bool BuffDescriptionTemplateNullWarned;
 
     /// <summary>
     /// 各 Buff 类型注册时记录的持续秒数表，供渲染包装器换算剩余秒数。
@@ -172,7 +168,6 @@ internal static class SpellHelper
     internal static void ResetBuffDelegateState()
     {
         BuffDelegateKeepAlive.Clear();
-        BuffDescriptionTemplateNullWarned = false;
         BuffDurationByType.Clear();
     }
 
@@ -184,20 +179,6 @@ internal static class SpellHelper
         => BuffDurationByType.TryGetValue(buffType, out var duration) ? duration : 0;
 
     /// <summary>
-    /// 描述模板为 null 时一次性告警，返回空串兜底。
-    /// </summary>
-    /// <returns>空串。</returns>
-    private static string WarnNullBuffDescriptionTemplate()
-    {
-        if (!BuffDescriptionTemplateNullWarned)
-        {
-            BuffDescriptionTemplateNullWarned = true;
-            Log.LogError("[SpellHelper] Buff 描述模板为 null，请确认已通过 RegisterBuffDescription 注入（数值占位符 $t 无法替换）。");
-        }
-        return string.Empty;
-    }
-
-    /// <summary>
     /// 把托管 Action 转换为 il2cpp 委托。
     /// </summary>
     /// <param name="managed">托管回调。</param>
@@ -206,21 +187,6 @@ internal static class SpellHelper
     private static Il2CppSystem.Action ToIl2CppAction(Action managed, string role)
         => DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(managed)
            ?? throw new InvalidOperationException($"Buff {role} 回调的 il2cpp 委托转换失败。");
-
-    /// <summary>
-    /// 构建数值剩余量描述回调（持续/次数通用），每帧把 $t 替换为剩余值。
-    /// </summary>
-    /// <returns>il2cpp Func&lt;int,string,string&gt; 委托。</returns>
-    private static Il2CppSystem.Func<int, string, string> BuildNumericContextOverride()
-        => DelegateSupport.ConvertDelegate<Il2CppSystem.Func<int, string, string>>(
-            (Func<int, string, string>)((remainingValue, template) =>
-            {
-                var result = template == null
-                    ? WarnNullBuffDescriptionTemplate()
-                    : template.Replace(RemainingValuePlaceholder, remainingValue.ToString());
-                return result;
-            }))
-           ?? throw new InvalidOperationException("Buff 描述回调（数值型）的 il2cpp 委托转换失败。");
 
     /// <summary>
     /// 把托管 Func&lt;string,string&gt; 转换为 il2cpp 委托（常驻形态描述用，调用方自行处理 $a/$b 占位符）。
@@ -296,16 +262,15 @@ internal static class SpellHelper
         }
         var onBuffEndCallback = BuildEndCallback(keepAliveEntry, onBuffEnd);
 
-        // currentBuffContextOverride 传 null：$t 替换由渲染包装器按原生 progress 接管
         eventManager.RegisterTimedBuff(
-            durationSeconds, buffType, out onInterruptThisBuffCallback, onBuffEndCallback, null, null);
+            durationSeconds, buffType, out onInterruptThisBuffCallback, onBuffEndCallback);
 
         onInterruptThisBuffCallback = BuildInterruptCallback(keepAliveEntry, onInterruptThisBuffCallback);
         BuffDelegateKeepAlive.Add(keepAliveEntry);
     }
 
     /// <summary>
-    /// 注册一个次数 Buff，每触发一次扣除 value 直到耗尽自动结束，UI 刷新由游戏原生接管，描述每帧将模板中的 $t 替换为剩余次数。
+    /// 注册一个次数 Buff
     /// </summary>
     /// <param name="eventManager">夜晚场景事件管理器实例，非空。</param>
     /// <param name="value">总次数，须为正数。</param>
@@ -331,14 +296,13 @@ internal static class SpellHelper
         }
 
         var keepAliveEntry = new List<object>();
-        var descriptionCallback = BuildNumericContextOverride();
-        keepAliveEntry.Add(descriptionCallback);
         var onBuffEndCallback = BuildEndCallback(keepAliveEntry, onBuffEnd);
         var onBuffDeductCallback = ToIl2CppAction(onBuffDeduct, "次数扣除");
         keepAliveEntry.Add(onBuffDeductCallback);
 
+
         eventManager.RegisterCountedBuff(
-            buffType, value, mathOperation, onBuffDeductCallback, onBuffEndCallback, descriptionCallback, allowZero, null);
+            buffType, value, mathOperation, onBuffDeductCallback, onBuffEndCallback);
     }
 
     /// <summary>
