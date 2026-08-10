@@ -63,10 +63,11 @@ public partial class Spell_Koakuma : SpellBase
     private System.Collections.IEnumerator PositiveBuffRoutine()
     {
         Log.LogInfo("[Koakuma] 红卡【灵符·遗失典籍的回响】触发，激活回响 Buff（9003）");
+        KoakumaOrderRevealEffect.TagCache.Clear();
         SpellHelper.RegisterCountedBuff(
             Manager,
             KoakumaEchoCount,
-            EventManager.MathOperation.Set,
+            EventManager.MathOperation.Add,
             (EventManager.BuffType)KoakumaEchoBuffType,
             OnEchoBuffDeduct);
         yield break;
