@@ -261,5 +261,6 @@
     "Spell_KoakumaEcho_BuffName": "灵符「遗失典籍的回响」",
     "Spell_KoakumaEcho_BuffDesc": "稀客点单会告诉你具体tag",
     "Spell_KoakumaChaos_BuffName": "幻符「献给巴瓦鲁的镇魂曲」",
-    "Spell_KoakumaChaos_BuffDesc": "小恶魔奏响镇魂曲，接下来料理面板的食材顺序被打乱、交互的厨具变为随机厨具，$t秒后解除"
+    "Spell_KoakumaChaos_BuffDesc": "小恶魔奏响镇魂曲，接下来料理面板的食材顺序被打乱、交互的厨具变为随机厨具，$t秒后解除",
+    "Spell_Koakuma_ChaosNotify": "小恶魔的恶作剧开始了！食材和厨具都乱套了！"
 }

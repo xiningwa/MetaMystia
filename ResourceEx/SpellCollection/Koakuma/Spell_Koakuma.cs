@@ -2,8 +2,8 @@ using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Il2CppInterop.Runtime.Attributes;
 using Il2CppSystem.Collections;
 using GameData.Core.Collections.NightSceneUtility;
-using GameData.CoreLanguage.Collections;
 using MetaMystia.ResourceEx.SpellCollection;
+using MetaMystia.UI;
 using NightScene.EventUtility;
 
 namespace MetaMystia.ResourceEx.SpellCollection.Koakuma;
@@ -77,7 +77,7 @@ public partial class Spell_Koakuma : SpellBase
     [HideFromIl2Cpp]
     private static void OnEchoBuffDeduct()
     {
-        Log.LogInfo("[Koakuma] 回响 Buff 扣除一次，待 U13 实现 tag 揭示");
+        Log.LogInfo("[Koakuma] 回响 Buff 扣除一次");
     }
 
     /// <summary>
@@ -92,18 +92,20 @@ public partial class Spell_Koakuma : SpellBase
 
     /// <summary>
     /// 黑卡主协程
-
     /// </summary>
     /// <returns>托管协程迭代器</returns>
     [HideFromIl2Cpp]
     private System.Collections.IEnumerator NegativeBuffRoutine()
     {
         Log.LogInfo("[Koakuma] 黑卡【幻符·献给巴瓦鲁的镇魂曲】触发，激活混沌 Buff（9005）");
+        KoakumaChaosEffect.Activate();
         SpellHelper.RegisterTimedBuff(
             Manager,
             KoakumaChaosDurationSeconds,
             (EventManager.BuffType)KoakumaChaosBuffType,
-            out _);
+            out _,
+            KoakumaChaosEffect.Deactivate);
+        KoakumaChaosEffect.NotifyChaosStart();
         yield break;
     }
 }

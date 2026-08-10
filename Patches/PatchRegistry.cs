@@ -69,6 +69,8 @@ public static partial class PatchRegistry
         typeof(CollabBehaviourComponentPatch),
         typeof(DaySceneUIManagerPatch),
         typeof(TrackedMissionDataPatch),
+        typeof(MetaMystia.ResourceEx.SpellCollection.Koakuma.KoakumaChaosEffect),
+        typeof(MetaMystia.ResourceEx.SpellCollection.Koakuma.KoakumaChaosIngredientShuffle),
     ];
 
     public static bool AllPatched => PatchedException == null;

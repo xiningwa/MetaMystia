@@ -341,6 +341,7 @@ public enum TextId
     Spell_KoakumaEcho_BuffDesc,
     Spell_KoakumaChaos_BuffName,
     Spell_KoakumaChaos_BuffDesc,
+    Spell_Koakuma_ChaosNotify,
 }
 
 public static class L10n
